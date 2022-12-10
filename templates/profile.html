@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %} Devil's Kitchen - Profile {% endblock %}
+
+{% block content %}
+
+<style>
+.userProfile{
+	font-size: 1.5em;
+}
+
+.btn.btn-danger{
+	color: #dc3545;
+	background-color: transparent;
+	background-image: none;
+	border-color: #dc3545;
+}
+.btn.btn-danger:hover{
+	color: #ffffff;
+	background-color: #dc3545;
+	border-color: #dc3545;
+
+</style>
+
+<br>
+<br>
+<br>
+
+<!-- Start Reservation Details -->
+<div class="reservation-box">
+	<div class="col-lg-12">
+		<div class="heading-title text-center">
+			<h2>Profile</h2>
+		</div>
+	</div>
+
+{% for profile in profile_user_list %}
+<div class="reservation-box">
+	<div class="container">
+		<div class = "text-center">
+		<h1>Hi There! {{ profile.get_first_name() }}</h1>
+		</div>
+		<div class="userProfile" style="border-style:ridge;border-color:#cfa671;">
+			<div class="col-md-6">
+				<div class="col-md-12" style="float:none;margin:auto;">
+					<p>Title: {{ profile.get_title() }}</p>
+					<p>First name: {{ profile.get_first_name() }}</p>
+					<p>Last name: {{ profile.get_last_name() }}</p>
+					<p>Gender: {{ profile.get_gender() }}</p>
+					<p>Email: {{ profile.get_emails() }}</p>
+				</div>
+			</div>
+
+			<div class="col-md-12">
+				<div class="submit-button text-center">
+					<a style="display:inline-block;" href="/updateU/{{profile.get_user_id()}}" class="btn btn-common">Update</a>
+					<a style="display:inline-block;">
+					<form action="{{url_for('delete_user', id=profile.get_user_id())}}" method="POST">
+
+			<button style="display:inline-block;" type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal_{{profile.get_user_id()}}">
+              Delete
+            </button>
+			<!-- The Modal -->
+            <div class="modal" id="myModal_{{profile.get_user_id()}}">
+              <div class="modal-dialog">
+                <div class="modal-content">
+
+                  <!-- Modal Header -->
+                  <div class="modal-header">
+                    <h4 class="modal-title">Delete Confirmation</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                  </div>
+
+                  <!-- Modal body -->
+                  <div class="modal-body">
+                    Are you sure you want to delete {{profile.get_first_name()}} {{profile.get_last_name()}}?
+                  </div>
+
+                  <!-- Modal footer -->
+                  <div class="modal-footer">
+                    <input type="submit" value="Delete" class="btn btn-danger">
+                    <button type="button" class="btn btn-common" data-dismiss="modal">Cancel</button>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+					</form>
+					</a>
+					<div id="msgSubmit" class="h3 text-center hidden"></div>
+					<div class="clearfix"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+<!-- End Profile Details -->
+{% endfor %}
+
+	<!-- Start Footer -->
+	<footer class="footer-area bg-f">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-3 col-md-6">
+					<h3>About Us</h3>
+					<p>Tom Sellers is the Chef Patron of Devil's Kitchen Restaurant. He dreamed of opening Devil's Kitchen Restaurant at the age of 19, and in April 2013, aged 26, was able to realise his dream. Tom trained at some of the world’s best restaurants including Restaurant Tom Aikens, Noma and Per Se. </p>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<h3>Opening hours</h3>
+					<p><span class="text-color">Monday: </span>Closed</p>
+					<p><span class="text-color">Tue-Wed :</span> 9AM - 10PM</p>
+					<p><span class="text-color">Thu-Fri :</span> 9AM - 10PM</p>
+					<p><span class="text-color">Sat-Sun :</span> 5PM - 10PM</p>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<h3>Contact information</h3>
+					<p class="lead">Ipsum Street, Lorem Tower, MO, Columbia, 508000</p>
+					<p class="lead"><a href="#">+01 2000 800 9999</a></p>
+					<p><a href="#"> info@admin.com</a></p>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<h3>Subscribe</h3>
+					<div class="subscribe_form">
+						<form class="subscribe_form">
+							<input name="EMAIL" id="subs-email" class="form_input" placeholder="Email Address..." type="email">
+							<button type="submit" class="submit">SUBSCRIBE</button>
+							<div class="clearfix"></div>
+						</form>
+					</div>
+					<ul class="list-inline f-social">
+						<li class="list-inline-item"><a href="#"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+						<li class="list-inline-item"><a href="#"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+						<li class="list-inline-item"><a href="#"><i class="fa fa-linkedin" aria-hidden="true"></i></a></li>
+						<li class="list-inline-item"><a href="#"><i class="fa fa-google-plus" aria-hidden="true"></i></a></li>
+						<li class="list-inline-item"><a href="#"><i class="fa fa-instagram" aria-hidden="true"></i></a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<div class="copyright">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-12">
+						<p class="company-name">All Rights Reserved. &copy; 2022 <a href="#">Devil's Kitchen Restaurant</a></p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</footer>
+	<!-- End Footer -->
+
+	<a href="#" id="back-to-top" title="Back to top" style="display: none;">&uarr;</a>
+
+{% endblock %}

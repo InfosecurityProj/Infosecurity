@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- Mobile Metas -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+     <!-- Site Metas -->
+    <title>Devil's Kitchen Restaurant</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    {% block head %}
+    <!-- Site Icons -->
+    <link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/static/images/apple-touch-icon.png">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+	<!-- Site CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <!-- Pickadate CSS -->
+    <link rel="stylesheet" href="/static/css/classic.css">
+	<link rel="stylesheet" href="/static/css/classic.date.css">
+	<link rel="stylesheet" href="/static/css/classic.time.css">
+    <!-- Responsive CSS -->
+    <link rel="stylesheet" href="/static/css/responsive.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/custom.css">
+
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    {% endblock %}
+
+</head>
+<body>
+    {% block navbar %}
+        {% include 'includes/_navbar.html' %}
+    {% endblock %}
+
+    <!-- Start header -->
+    {% block content %}
+    {% endblock %}
+    <!-- End header -->
+
+    {% block scripts %}
+    <!-- ALL JS FILES -->
+	<script src="/static/js/jquery-3.2.1.min.js"></script>
+	<script src="/static/js/popper.min.js"></script>
+	<script src="/static/js/bootstrap.min.js"></script>
+    <!-- ALL PLUGINS -->
+	<script src="/static/js/jquery.superslides.min.js"></script>
+	<script src="/static/js/images-loded.min.js"></script>
+	<script src="/static/js/isotope.min.js"></script>
+	<script src="/static/js/baguetteBox.min.js"></script>
+    <script src="/static/js/picker.js"></script>
+	<script src="/static/js/picker.date.js"></script>
+	<script src="/static/js/picker.time.js"></script>
+	<script src="/static/js/legacy.js"></script>
+    <script src="/static/js/custom.js"></script>
+    {% endblock %}
+
+
+</body>
+</html>

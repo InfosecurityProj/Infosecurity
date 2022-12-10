@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %} Devil's Kitchen - Reservation {% endblock %}
+
+{% block content %}
+{% from "includes/_formHelper.html" import render_field %}
+
+<br>
+<br>
+<br>
+	<!-- Start Update Reservation Details -->
+	<div class="reservation-box">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-12">
+					<div class="heading-title text-center">
+						<h2>Update Details</h2>
+						<p>Edit your details here</p>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-lg-12 col-sm-12 col-xs-12">
+					<div class="contact-block">
+						<form method="POST" id="contactForm">
+							<div class="row">
+								<div class="col-md-6">
+									<h3>Book a table</h3>
+									<div class="col-md-12">
+										<div class="form-group">
+											{{ render_field(form.date, class="datepicker picker__input form-control", placeholder="Date", id="input_date") }}
+											<div class="help-block with-errors"></div>
+										</div>
+									</div>
+									<div class="col-md-12">
+										<div class="form-group">
+											{{ render_field(form.time, class="form-control picker__input") }}
+											<div class="help-block with-errors"></div>
+										</div>
+									</div>
+									<div class="col-md-12">
+										<div class="form-group">
+											{{ render_field(form.party_size, class="custom-select d-block form-control", id="person") }}
+											<div class="help-block with-errors"></div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<h3>Contact Details</h3>
+									<div class="col-md-12">
+										<div class="form-group">
+											 {{ render_field(form.name, class="form-control", placeholder="Your Name", id="name") }}
+											<div class="help-block with-errors" ><p style="color: #dc3545;">{{error}}</p></div>
+										</div>
+									</div>
+									<div class="col-md-12">
+										<div class="form-group">
+											 {{ render_field(form.email, class="form-control", placeholder="Your Email", id="email") }}
+											<div class="help-block with-errors"></div>
+										</div>
+									</div>
+									<div class="col-md-12">
+										<div class="form-group">
+											{{ render_field(form.number, class="form-control", placeholder="Your Number", id="phone") }}
+											<div class="help-block with-errors"></div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-12">
+									<div class="submit-button text-center">
+										<button class="btn btn-common" id="submit" type="submit">Update</button>
+										<div id="msgSubmit" class="h3 text-center hidden"></div>
+										<div class="clearfix"></div>
+									</div>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- End Update Reservation Details -->
+
+	<!-- Start Footer -->
+	<footer class="footer-area bg-f">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-3 col-md-6">
+					<h3>About Us</h3>
+					<p>Tom Sellers is the Chef Patron of Devil's Kitchen Restaurant. He dreamed of opening Devil's Kitchen Restaurant at the age of 19, and in April 2013, aged 26, was able to realise his dream. Tom trained at some of the world’s best restaurants including Restaurant Tom Aikens, Noma and Per Se. </p>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<h3>Opening hours</h3>
+					<p><span class="text-color">Monday: </span>Closed</p>
+					<p><span class="text-color">Tue-Wed :</span> 9AM - 10PM</p>
+					<p><span class="text-color">Thu-Fri :</span> 9AM - 10PM</p>
+					<p><span class="text-color">Sat-Sun :</span> 5PM - 10PM</p>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<h3>Contact information</h3>
+					<p class="lead">Ipsum Street, Lorem Tower, MO, Columbia, 508000</p>
+					<p class="lead"><a href="#">+01 2000 800 9999</a></p>
+					<p><a href="#"> info@admin.com</a></p>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<h3>Subscribe</h3>
+					<div class="subscribe_form">
+						<form class="subscribe_form">
+							<input name="EMAIL1" id="subs-email" class="form_input" placeholder="Email Address..." type="email">
+							<button type="submit" class="submit">SUBSCRIBE</button>
+							<div class="clearfix"></div>
+						</form>
+					</div>
+					<ul class="list-inline f-social">
+						<li class="list-inline-item"><a href="#"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+						<li class="list-inline-item"><a href="#"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+						<li class="list-inline-item"><a href="#"><i class="fa fa-linkedin" aria-hidden="true"></i></a></li>
+						<li class="list-inline-item"><a href="#"><i class="fa fa-google-plus" aria-hidden="true"></i></a></li>
+						<li class="list-inline-item"><a href="#"><i class="fa fa-instagram" aria-hidden="true"></i></a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<div class="copyright">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-12">
+						<p class="company-name">All Rights Reserved. &copy; 2022 <a href="#">Devil's Kitchen Restaurant</a></p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</footer>
+	<!-- End Footer -->
+
+	<a href="#" id="back-to-top" title="Back to top" style="display: none;">&uarr;</a>
+{% endblock %}

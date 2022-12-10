@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %} Devil's Kitchen - Validate OTP {% endblock %}
+
+{% block content %}
+<br>
+<br>
+<br>
+<div class="reservation-box">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="heading-title text-center">
+                    <h2>Validate OTP</h2>
+                    <p>Two-factor Authentication</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="contact-block">
+                    <form method="post" action="">
+                        <div class="form-group">
+                            <div class="col-md-6" style="float:none;margin:auto;">
+                                <div class="form-group text-center">
+                                    <input type="text" class="form-control" name="otp_code"
+                                           placeholder="Enter the OTP code here" required>
+                                    <div class="help-block with-errors"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="submit-button text-center">
+                                <p style="color: #dc3545;">{{ error }}</p>
+                                <button type="submit" class="btn btn-common">Validate OTP</button>
+                                <div id="msgSubmit" class="h3 text-center hidden"></div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

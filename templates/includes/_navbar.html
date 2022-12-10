@@ -1,0 +1,69 @@
+<style>
+	.navbar-expand-lg .navbar-nav .dropdown-menu a.dropdown-item.active {
+    background: #d0a772;
+	color: #ffffff;
+}
+</style>
+
+<header class="top-navbar">
+		<nav class="navbar navbar-expand-lg navbar-light bg-light">
+			<div class="container">
+                <!-- Brand-->
+				<a class="navbar-brand" href="/">
+					<img src="/static/images/logo.png" alt="" />
+				</a>
+
+				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbars-rs-food" aria-controls="navbars-rs-food" aria-expanded="false" aria-label="Toggle navigation">
+				  <span class="navbar-toggler-icon"></span>
+				</button>
+
+
+				<div class="collapse navbar-collapse" id="navbars-rs-food">
+					<ul class="navbar-nav ml-auto">
+						<!-- Account -->
+						<li class="nav-item dropdown">
+							{% if current_user.is_authenticated %}
+							<!-- show account's name and whether they are a user or staff if not logged in -->
+							<a class="nav-link dropdown-toggle" href="#" id="dropdown-a" data-toggle="dropdown">{{ current_user.first_name }} <img src="https://static.thenounproject.com/png/3070444-200.png" width="15px"></a>
+							{% endif %}
+
+							<!-- show "Account" if not logged in ABCDEFG-->
+							{% if not current_user.is_authenticated %}
+							<a class="nav-link dropdown-toggle" href="#" id="dropdown-a" data-toggle="dropdown">Account <img src="https://static.thenounproject.com/png/3070444-200.png" width="15px"></a>
+							{% endif %}
+							<div class="dropdown-menu" aria-labelledby="dropdown-a">
+								<!-- dropdown view for guests -->
+								{% if current_user.is_anonymous %}
+								<!-- Login -->
+								<a class="btn btn-default" href="{{ url_for('login') }}">
+									Login
+								</a>
+								<a class="btn btn-default" href="{{ url_for('logout') }}">
+									Register
+								</a>
+								<!-- dropdown view for staffs -->
+								{% elif current_user.has_role('superuser') %}
+								<!-- Retrieve Users -->
+								<a class="{{'dropdown-item active' if active_page == 'user' else 'dropdown-item' }}" href="/retrieving">User Details</a>
+								<!-- Retrieve reservation for staffs -->
+								<a class="{{'dropdown-item active' if active_page == 'sReserve' else 'dropdown-item' }}" href="/staffReserve">Reservation Details</a>
+								<!-- Logout -->
+								<a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a>
+
+								<!-- dropdown view for users -->
+								{% elif current_user.has_role('user') %}
+								<!-- User Reserve -->
+								<a class="{{'dropdown-item active' if active_page == 'uReserve' else 'dropdown-item' }}" href="/userReserve">My Reservation</a>
+								<!-- User Reserve -->
+								<a class="{{'dropdown-item active' if active_page == 'profile' else 'dropdown-item' }}" href="/profile">Profile</a>
+								<!-- Logout -->
+								<a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a>
+								{% endif %}
+
+							</div>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+	</header>
