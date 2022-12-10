@@ -1,27 +1,40 @@
 from flask import Flask,request,flash,render_template,make_response,redirect,url_for
 from flask_login import LoginManager,login_required,logout_user,current_user,login_user
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 from app.Forms import *
-from app.user import User
+from app.models import User
+from app.database import db
 
 app = Flask(__name__)
 app.secret_key = 'NahidaKawaii'
 login_manager = LoginManager()
 login_manager.init_app(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test1.db"
 
+db.init_app(app)
 
-@app.before_request
-def create_tables():
-    with app.app_context():
-        db.create_all()
+with app.app_context():
+    db.create_all()
+    users = User.query.all()
+    print(users)
+    if User.query.filter_by(username="admin").first():
+    # The "admin" username already exists, so handle the error
+    # ...
+        print("admin exist")
+        pass
+    else:
+        # The "admin" username does not exist, so create a new user
+        user=User(username="admin",password_hash="pbkdf2:sha256:150000$o3FaFCJz$c2b91aa2abd9eac0480aaf06861061c8ba6f7d75167dc03acea09dddf47eeac0",is_suspended=False)
+        db.session.add(user)
+        db.session.commit()
         
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -47,14 +60,14 @@ def register():
     if request.method == 'POST':
         username = request.form['first_name']
         password = request.form['password']
-        user = User(username=username)
+        user = User(username=username,password_hash=password,is_suspended=False)
         print(password)
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
         flash('Congratulations, you are now a registered user!')
         return redirect(url_for('login'))
-    return render_template('regi.html', form=create_user_form)
+    return render_template('register.html', form=create_user_form)
 
 
 
