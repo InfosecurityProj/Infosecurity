@@ -25,10 +25,9 @@
 							{% if current_user.is_authenticated %}
 							<!-- show account's name and whether they are a user or staff if not logged in -->
 							<a class="nav-link dropdown-toggle" href="#" id="dropdown-a" data-toggle="dropdown">{{ current_user.first_name }} <img src="https://static.thenounproject.com/png/3070444-200.png" width="15px"></a>
-							{% endif %}
 
 							<!-- show "Account" if not logged in ABCDEFG-->
-							{% if not current_user.is_authenticated %}
+							{% elif not current_user.is_authenticated %}
 							<a class="nav-link dropdown-toggle" href="#" id="dropdown-a" data-toggle="dropdown">Account <img src="https://static.thenounproject.com/png/3070444-200.png" width="15px"></a>
 							{% endif %}
 							<div class="dropdown-menu" aria-labelledby="dropdown-a">
@@ -42,16 +41,16 @@
 									Register
 								</a>
 								<!-- dropdown view for staffs -->
-								{% elif current_user.has_role('superuser') %}
+								{% elif current_user.get_role() == "Administrator" %}
 								<!-- Retrieve Users -->
 								<a class="{{'dropdown-item active' if active_page == 'user' else 'dropdown-item' }}" href="/retrieving">User Details</a>
 								<!-- Retrieve reservation for staffs -->
 								<a class="{{'dropdown-item active' if active_page == 'sReserve' else 'dropdown-item' }}" href="/staffReserve">Reservation Details</a>
 								<!-- Logout -->
 								<a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a>
-
+								
 								<!-- dropdown view for users -->
-								{% elif current_user.has_role('user') %}
+								{% elif current_user.get_role() == "User" %}
 								<!-- User Reserve -->
 								<a class="{{'dropdown-item active' if active_page == 'uReserve' else 'dropdown-item' }}" href="/userReserve">My Reservation</a>
 								<!-- User Reserve -->
