@@ -23,7 +23,7 @@ with app.app_context():
         pass
     else:
         # The "admin" username does not exist, so create a new user
-        user=User(username="admin",password_hash="pbkdf2:sha256:150000$o3FaFCJz$c2b91aa2abd9eac0480aaf06861061c8ba6f7d75167dc03acea09dddf47eeac0",is_active=True,role="Administrator")
+        user=User(username="admin",password_hash="7d6c1c4b5e4172025422498f0833953fe5c4d1ecda84c8d4e6ecb8a845d3f453",account_status="1",role="Administrator")
         db.session.add(user)
         db.session.commit()
         
@@ -43,9 +43,13 @@ def login():
         username = request.form['email']
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
-        if user is None or not user.check_password(password):
-            flash('Invalid username or password')
+        # print(user.check_password(password),"passwordcheck")
+        if user is None or not user.check_password(password,username):
+            flash('Invalid username or password.')
             return redirect(url_for('login'))
+        elif user.get_account_status == "0":
+            flash('Account is disabled.')
+            return redirect(url_for(index))
         login_user(user)
         return redirect(url_for('index'))
     return render_template('login.html')
@@ -58,8 +62,8 @@ def register():
     if request.method == 'POST':
         username = request.form['first_name']
         password = request.form['password']
-        user = User(username=username,password_hash=password,is_active=True,role="User")
-        user.set_password(password)
+        user = User(username=username,password_hash=password,account_status="1",role="User")
+        user.set_password(password,username)
         db.session.add(user)
         db.session.commit()
         flash('Congratulations, you are now a registered user!')
@@ -71,7 +75,7 @@ def retrieving_users():
     if not session.get('type'):
         session['type'] = 'guest'
     if current_user.is_authenticated :
-        if current_user.has_role('superuser'):  # edited to prevent path traversal
+        if current_user.get_role() == "Administrator" :  # edited to prevent path traversal
             response = make_response(render_template('retrieving.html'))
             return response
         else:
@@ -79,7 +83,7 @@ def retrieving_users():
             return resp
     else:
         flash("You have been logged out due to 30 minutes of inactivity. Please re-login again.")
-        resp = make_response(redirect(url_for('security.login')))
+        resp = make_response(redirect(url_for('login')))
         return resp
 
 
