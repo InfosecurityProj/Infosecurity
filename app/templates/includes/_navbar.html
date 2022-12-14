@@ -24,7 +24,7 @@
 						<li class="nav-item dropdown">
 							{% if current_user.is_authenticated %}
 							<!-- show account's name and whether they are a user or staff if not logged in -->
-							<a class="nav-link dropdown-toggle" href="#" id="dropdown-a" data-toggle="dropdown">{{ current_user.first_name }} <img src="https://static.thenounproject.com/png/3070444-200.png" width="15px"></a>
+							<a class="nav-link dropdown-toggle" href="#" id="dropdown-a" data-toggle="dropdown">{{ current_user.username }} <img src="https://static.thenounproject.com/png/3070444-200.png" width="15px"></a>
 
 							<!-- show "Account" if not logged in ABCDEFG-->
 							{% elif not current_user.is_authenticated %}

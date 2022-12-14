@@ -57,11 +57,12 @@ class CreateUserForm(Form):
     title = SelectField('Title', [validators.DataRequired()],
                         choices=[('', 'Select'), ('Mister', 'Mr'), ('Mistress', 'Mrs'), ('Miss', 'Ms'),
                                  ('Madam', 'Mdm')], default='')
-    emails = StringField('Email', [validators.DataRequired(), validators.Email()])
+    email = StringField('Email', [validators.DataRequired(), validators.Email()])
     password = PasswordField('Password', [validators.InputRequired()])
     confirm_password = PasswordField('Confirm Password', [validators.DataRequired(), validators.input_required(),
                                                           validators.EqualTo("password",
                                                                              message='Passwords must match')])
+    username = StringField('Username', [validators.Length(min=1, max=150), validators.DataRequired()])
     recaptcha = RecaptchaField()
 
     def validate_password(self, Form):

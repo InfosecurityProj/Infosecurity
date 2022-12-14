@@ -13,14 +13,23 @@ class User(UserMixin,db.Model):
     password_hash = db.Column(db.String(128))
     account_status = db.Column(db.Integer, default="1")
     role = db.Column(db.String(80), default="User")
+    first_name = db.Column(db.String(20))
+    last_name = db.Column(db.String(20))
+    title = db.Column(db.String(5), default="Female")
+    title = db.Column(db.String(3), default="Mr")
+    email = db.Column(db.String(255))
 
-    
-    def __init__(self,username,password_hash,account_status,role):
+    def __init__(self,username,email,password_hash,account_status,role,title,first_name,last_name,gender):
         self.user_id = User.id
         self.username = username
         self.password_hash = password_hash
         self.account_status = account_status
         self.role = role
+        self.first_name = first_name
+        self.last_name = last_name
+        self.gender = gender
+        self.title = title
+        self.email = email
     
     def set_password(self, password, username):
         salt = bytes(str(id) + username, "utf-8")
@@ -65,6 +74,21 @@ class User(UserMixin,db.Model):
     
     def set_account_status(self, account_status):
         self.account_status = account_status
+        
+    def set_first_name(self, first_name):
+        self.first_name = first_name
+
+    def set_last_name(self, last_name):
+        self.last_name = last_name
+
+    def set_gender(self, gender):
+        self.gender = gender
+
+    def set_title(self, title):
+        self.title = title
+        
+    def set_email(self, email):
+        self.email = email
     
     def get_id(self):
         return self.id
@@ -81,3 +105,17 @@ class User(UserMixin,db.Model):
     def get_account_status(self):
         return self.account_status
     
+    def get_first_name(self):
+        return self.first_name
+
+    def get_last_name(self):
+        return self.last_name
+
+    def get_gender(self):
+        return self.gender
+
+    def get_title(self):
+        return self.title
+    
+    def get_email(self):
+        return self.email
