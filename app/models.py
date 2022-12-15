@@ -40,6 +40,7 @@ class User(UserMixin,db.Model):
             salt,  # The salt to use, as bytes
             100000  # The number of iterations to use
         )
+        print(hashed_password)
         self.password_hash=str(hashed_password.hex())
         print(self.password_hash,"pw hash")
         # self.password_hash = generate_password_hash(password)
@@ -54,9 +55,12 @@ class User(UserMixin,db.Model):
         )
         print(hashed_user_password)
         hash_login_password=str(hashed_user_password.hex())
+        print(hash_login_password,"hash login password")
         if hash_login_password == self.password_hash:
+            print("password hash match")
             return True
-        else:
+        elif hash_login_password != self.password_hash:
+            print("password hash does not match")
             return False
         # return check_password_hash(self.password_hash, password)
     

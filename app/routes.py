@@ -43,7 +43,9 @@ def login():
         username = request.form['email']
         email = request.form['email']
         password = request.form['password']
-        user = User.query.filter(or_(username==username,email==email)).first()
+        user = User.query.filter_by(username=username).first()
+        # user,useremail = User.query.filter_by(username=username).first(),User.query.filter_by(email=email).first()
+        # user = User.query.filter(or_(username==username,email==email)).first()
         print(user)
         # print(user.check_password(password),"passwordcheck")
         # if user.get_account_status == 1:
@@ -51,6 +53,7 @@ def login():
         #     flash('Account is disabled.Contact support for help.')
         #     return redirect(url_for('login'))
         # print(user.get_account_status,"account_status")
+        # if user is None or not user.check_password(password,username) or useremail.check_password(password,username):
         if user is None or not user.check_password(password,username):
             flash('Invalid username or password.')
             return redirect(url_for('login'))
