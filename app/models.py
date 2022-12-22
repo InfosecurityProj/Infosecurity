@@ -1,7 +1,7 @@
 from flask_login import UserMixin
 from flask import Flask
 from app.database import db
-import hashlib
+import hashlib, uuid, re
 
 app = Flask(__name__)
 
@@ -18,6 +18,7 @@ class User(UserMixin,db.Model):
     title = db.Column(db.String(5), default="Female")
     title = db.Column(db.String(3), default="Mr")
     email = db.Column(db.String(255))
+    account_salt = db.Column(db.String(255))
 
     def __init__(self,username,email,password_hash,account_status,role,title,first_name,last_name,gender):
         self.user_id = User.id
@@ -30,9 +31,12 @@ class User(UserMixin,db.Model):
         self.gender = gender
         self.title = title
         self.email = email
+        self.account_salt = User.account_salt
     
-    def set_password(self, password, username):
-        salt = bytes(str(id) + username, "utf-8")
+    def set_password(self, password):
+        Useruuid = str(uuid.uuid4())[:8].encode('utf-8')
+        salt = bytes(hashlib.sha256(Useruuid).hexdigest(), "utf-8")
+        self.account_salt = salt
         print(salt,"password salt")
         hashed_password = hashlib.pbkdf2_hmac(
             "sha256",  # The hashing algorithm to use
@@ -45,8 +49,9 @@ class User(UserMixin,db.Model):
         print(self.password_hash,"pw hash")
         # self.password_hash = generate_password_hash(password)
 
-    def check_password(self, password, username):
-        salt = bytes(str(id) + username, "utf-8")
+    def check_password(self, password):
+        salt = self.account_salt
+        print(salt,"password salt")
         hashed_user_password = hashlib.pbkdf2_hmac(
             "sha256",  # The hashing algorithm to use
             password.encode(),  # The password to hash, as bytes
@@ -94,6 +99,9 @@ class User(UserMixin,db.Model):
     def set_email(self, email):
         self.email = email
     
+    def set_account_salt(self,account_salt):
+        self.account_salt = account_salt
+    
     def get_id(self):
         return self.id
     
@@ -123,3 +131,6 @@ class User(UserMixin,db.Model):
     
     def get_email(self):
         return self.email
+    
+    def get_account_salt(self):
+        return self.account_salt

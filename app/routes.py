@@ -43,7 +43,8 @@ def login():
         username = request.form['email']
         email = request.form['email']
         password = request.form['password']
-        user = User.query.filter_by(username=username).first()
+        # user = User.query.filter_by(username=username).first()
+        user = User.query.filter_by(username=username).first() or User.query.filter_by(email=email).first()
         # user,useremail = User.query.filter_by(username=username).first(),User.query.filter_by(email=email).first()
         # user = User.query.filter(or_(username==username,email==email)).first()
         print(user)
@@ -54,7 +55,7 @@ def login():
         #     return redirect(url_for('login'))
         # print(user.get_account_status,"account_status")
         # if user is None or not user.check_password(password,username) or useremail.check_password(password,username):
-        if user is None or not user.check_password(password,username):
+        if user is None or not user.check_password(password):
             flash('Invalid username or password.')
             return redirect(url_for('login'))
         login_user(user)
@@ -66,21 +67,21 @@ def register():
     create_user_form = CreateUserForm(request.form)
     if current_user.is_authenticated:
         return redirect(url_for('index'))
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
-        gender = request.form['gender']
-        title = request.form['title']
-        email = request.form['email']
-        user = User(username=username,email=email,password_hash=password,account_status="1",role="User",
-                    title=title,first_name=first_name,last_name=last_name,gender=gender)
-        user.set_password(password,username)
-        db.session.add(user)
-        db.session.commit()
-        flash('Congratulations, you are now a registered user!')
-        return redirect(url_for('login'))
+    if request.method == 'POST' and create_user_form.validate():
+            username = request.form['username']
+            password = request.form['password']
+            first_name = request.form['first_name']
+            last_name = request.form['last_name']
+            gender = request.form['gender']
+            title = request.form['title']
+            email = request.form['email']
+            user = User(username=username,email=email,password_hash=password,account_status="1",role="User",
+                        title=title,first_name=first_name,last_name=last_name,gender=gender)
+            user.set_password(password)
+            db.session.add(user)
+            db.session.commit()
+            flash('Congratulations, you are now a registered user!')
+            return redirect(url_for('login'))
     return render_template('register.html', form=create_user_form)
 
 @app.route('/retrieving')

@@ -1,7 +1,7 @@
 from wtforms import Form, SubmitField, StringField, SelectField, TextAreaField, validators, PasswordField, ValidationError,BooleanField,TextField
 from wtforms.fields.html5 import EmailField, DateField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError,InputRequired,Required
-from flask_wtf import FlaskForm, RecaptchaField
+from flask_wtf import FlaskForm
 from string import punctuation
 import phonenumbers
 
@@ -63,7 +63,6 @@ class CreateUserForm(Form):
                                                           validators.EqualTo("password",
                                                                              message='Passwords must match')])
     username = StringField('Username', [validators.Length(min=1, max=150), validators.DataRequired()])
-    recaptcha = RecaptchaField()
 
     def validate_password(self, Form):
         symbols = set(punctuation)
