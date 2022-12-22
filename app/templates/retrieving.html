@@ -53,24 +53,22 @@
         <th>Title</th>
         <th>Gender</th>
 		<th>Email</th>
-		<th>Type</th>
         <th>Password</th>
         <th></th>
       </tr>
     </thead>
     <tbody>
-      {% for user in users_list %}
+      {% for user in users %}
       <tr>
-        <td>{{ user.get_user_id() }}</td>
+        <td>{{ user.get_id() }}</td>
         <td>{{ user.get_first_name() }}</td>
         <td>{{ user.get_last_name() }}</td>
         <td>{{ user.get_title() }}</td>
 		<td>{{ user.get_gender() }}</td>
-		<td>{{ user.get_emails() }}</td>
-		<td>{{ user.get_type()}}</td>
-		<td>Password: {{ user.get_password()}}</td>
+		<td>{{ user.get_email() }}</td>
+		<td>Password: {{ user.get_password_hash()}}</td>
 
-        <td><a href="/updateU/{{user.get_user_id()}}" class="btn btn-common">Update</a></td>
+        <td><a href="/updateU/{{user.get_id()}}" class="btn btn-common">Update</a></td>
         <td>
           <form action="{{url_for('delete_user', id=user.get_user_id())}}" method="POST">
 <!--            <input type="submit" value="Delete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete {{user.get_first_name()}} {{user.get_last_name()}}?');">-->

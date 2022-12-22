@@ -15,12 +15,12 @@ class User(UserMixin,db.Model):
     role = db.Column(db.String(80), default="User")
     first_name = db.Column(db.String(20))
     last_name = db.Column(db.String(20))
-    title = db.Column(db.String(5), default="Female")
-    title = db.Column(db.String(3), default="Mr")
+    gender = db.Column(db.String(6), default="Female")
+    title = db.Column(db.String(10), default="Mr")
     email = db.Column(db.String(255))
     account_salt = db.Column(db.String(255))
 
-    def __init__(self,username,email,password_hash,account_status,role,title,first_name,last_name,gender):
+    def __init__(self,username,email,password_hash,account_status,role,title,first_name,last_name,gender,account_salt):
         self.user_id = User.id
         self.username = username
         self.password_hash = password_hash
@@ -31,7 +31,7 @@ class User(UserMixin,db.Model):
         self.gender = gender
         self.title = title
         self.email = email
-        self.account_salt = User.account_salt
+        self.account_salt = account_salt
     
     def set_password(self, password):
         Useruuid = str(uuid.uuid4())[:8].encode('utf-8')
@@ -44,13 +44,14 @@ class User(UserMixin,db.Model):
             salt,  # The salt to use, as bytes
             100000  # The number of iterations to use
         )
-        print(hashed_password)
-        self.password_hash=str(hashed_password.hex())
-        print(self.password_hash,"pw hash")
+        print(f"Hash Password:{hashed_password} String: {str(hashed_password.hex().encode('UTF-8'))}" )
+        print(hashed_password,"byte")
+        self.password_hash=hashed_password.hex()
+        print(bytes(self.password_hash.encode('UTF-8')),"pw hash")
         # self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
-        salt = self.account_salt
+        salt = bytes(self.account_salt.encode('UTF-8'))
         print(salt,"password salt")
         hashed_user_password = hashlib.pbkdf2_hmac(
             "sha256",  # The hashing algorithm to use

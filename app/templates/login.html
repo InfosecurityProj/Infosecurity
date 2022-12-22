@@ -17,17 +17,17 @@
   {% endif %}
 {% endwith %} -->
 {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-primary alert-dismissible fade show" role="alert">
-                        <span>{{ message }}</span>
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-          {% endwith %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-primary alert-dismissible fade show" role="alert">
+	<span>{{ message }}</span>
+	<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+		<span aria-hidden="true">&times;</span>
+	</button>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
 <!-- {% with messages = get_flashed_messages() %}
 		{% if messages %}
 			{% for msg in messages %}
@@ -37,232 +37,310 @@
 	{% endwith %} -->
 
 <head>
-  <meta name="google-signin-scope" content="profile email">
-	<meta name="google-signin-client_id" content="546934876717-2siievmmi6mjanopdnr9mi2o0s0p4vtc.apps.googleusercontent.com">
+	<meta name="google-signin-scope" content="profile email">
+	<meta name="google-signin-client_id"
+		content="546934876717-2siievmmi6mjanopdnr9mi2o0s0p4vtc.apps.googleusercontent.com">
 </head>
 
 <!--https://www.w3schools.com/howto/howto_css_center_button.asp-->
 <style>
-.vertical-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100px;
-  border: 3px;
-}
-        *, *:before, *:after {
-            box-sizing: border-box;
-        }
+	.vertical-center {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100px;
+		border: 3px;
+	}
 
-        .g-sign-in-button {
-            margin: 10px;
-            display: inline-block;
-            width: 240px;
-            height: 50px;
-            background-color: #4285f4;
-            color: #fff;
-            border-radius: 1px;
-            box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.25);
-            transition: background-color .218s, border-color .218s, box-shadow .218s;
-        }
+	*,
+	*:before,
+	*:after {
+		box-sizing: border-box;
+	}
 
-        .g-sign-in-button:hover {
-            cursor: pointer;
-            -webkit-box-shadow: 0 0 3px 3px rgba(66, 133, 244, 0.3);
-            box-shadow: 0 0 3px 3px rgba(66, 133, 244, 0.3);
-        }
+	.g-sign-in-button {
+		margin: 10px;
+		display: inline-block;
+		width: 240px;
+		height: 50px;
+		background-color: #4285f4;
+		color: #fff;
+		border-radius: 1px;
+		box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.25);
+		transition: background-color .218s, border-color .218s, box-shadow .218s;
+	}
 
-        .g-sign-in-button:active {
-            background-color: #3367D6;
-            transition: background-color 0.2s;
-        }
+	.g-sign-in-button:hover {
+		cursor: pointer;
+		-webkit-box-shadow: 0 0 3px 3px rgba(66, 133, 244, 0.3);
+		box-shadow: 0 0 3px 3px rgba(66, 133, 244, 0.3);
+	}
 
-        .g-sign-in-button .content-wrapper {
-            height: 100%;
-            width: 100%;
-            border: 1px solid transparent;
-        }
+	.g-sign-in-button:active {
+		background-color: #3367D6;
+		transition: background-color 0.2s;
+	}
 
-        .g-sign-in-button img {
-            width: 18px;
-            height: 18px;
-            vertical-align: top; left;
-        }
+	.g-sign-in-button .content-wrapper {
+		height: 100%;
+		width: 100%;
+		border: 1px solid transparent;
+	}
 
-        .g-sign-in-button .logo-wrapper {
-            padding: 15px;
-            background: #fff;
-            width: 48px;
-            height: 100%;
-            border-radius: 1px;
-            display: inline-block;
-        }
+	.g-sign-in-button img {
+		width: 18px;
+		height: 18px;
+		vertical-align: top;
+		left;
+	}
 
-        .g-sign-in-button .text-container {
-            font-family: Roboto,arial,sans-serif;
-            font-weight: 500;
-            letter-spacing: .21px;
-            font-size: 16px;
-            line-height: 48px;
-            vertical-align: top;
-            border: none;
-            display: inline-block;
-            text-align: center;
-            width: 180px;
-        }
+	.g-sign-in-button .logo-wrapper {
+		padding: 15px;
+		background: #fff;
+		width: 48px;
+		height: 100%;
+		border-radius: 1px;
+		display: inline-block;
+	}
+
+	.g-sign-in-button .text-container {
+		font-family: Roboto, arial, sans-serif;
+		font-weight: 500;
+		letter-spacing: .21px;
+		font-size: 16px;
+		line-height: 48px;
+		vertical-align: top;
+		border: none;
+		display: inline-block;
+		text-align: center;
+		width: 180px;
+	}
+
+	input::placeholder{
+		font-family: 'Times New Roman', Times, serif
+	}
+
+	/* Hide Password CSS*/
+	.input-group {
+		margin-bottom: 1.25em;
+	}
+
+	input[type="text"],
+	input[type="password"] {
+		-webkit-appearance: none;
+		border-radius: 1px;
+		box-sizing: border-box;
+		font-size: 1.25em;
+		height: auto;
+		padding: .5em;
+
+	}
+
+	input[type="password"]::-ms-reveal {
+		display: none;
+	}
+
+	.btn {
+		margin-top: 1.75em;
+	}
+
+	.input-group {
+		position: relative;
+		width: 100%;
+	}
+
+	.toggle {
+		background: none;
+		border: none;
+		color: #337ab7;
+		/*display: none;*/
+		/*font-size: .9em;*/
+		font-weight: 600;
+		/*padding: .5em;*/
+		position: absolute;
+		right: 1.5em;
+		top: .69em;
+		z-index: 9;
+	}
 </style>
 
 <!-- Start Login -->
 <div class="reservation-box">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-12">
-					<div class="heading-title text-center">
-						<h2>Login</h2>
-						<p>Type in your personal particulars</p>
-					</div>
+	<div class="container">
+		<div class="row">
+			<div class="col-lg-12">
+				<div class="heading-title text-center">
+					<h2>Login</h2>
+					<p>Type in your personal particulars</p>
 				</div>
 			</div>
-			<div class="row">
-				<div class="col-lg-12">
-					<div class="contact-block">
-						<form method="POST" id="contactForm">
-							<div class="row">
-								<div class="col-md-12 text-center">
-									<h3>Login</h3>
-									<div class="col-md-6" style="float:none;margin:auto;">
-										<div class="form-group text-center">
-											<input type="text" class="form-control" placeholder="Enter Email" name="email" required data-error="Please enter your email">
-											<div class="help-block with-errors"></div>
-										</div>
-									</div>
-									<div class="col-md-6" style="float:none;margin:auto;">
-										<div class="form-group text-center">
-											<input type="password" class="form-control" placeholder="Enter Password" name="password" required data-error="Please enter your password">
-											<div class="help-block with-errors"></div>
-										</div>
-									</div>
-									</div>
-								<div class="col-md-12">
-									<div class="submit-button text-center">
-										<p style="color: #dc3545;">{{ error }}</p>
-										<button class="btn btn-common" id="submit" type="submit" style="">Login</button>
-										<div id="msgSubmit" class="h3 text-center hidden"></div>
-										<div class="clearfix"></div>
+		</div>
+		<div class="row">
+			<div class="col-lg-12">
+				<div class="contact-block">
+					<form method="POST" id="contactForm">
+						<div class="row">
+							<div class="col-md-12 text-center">
+								<h3>Login</h3>
+								<div class="col-md-6" style="float:none;margin:auto;">
+									<div class="form-group text-center">
+										<input type="text" class="form-control" placeholder="Username or Email Address"
+											name="email" required data-error="Please enter your email">
+										<div class="help-block with-errors"></div>
 									</div>
 								</div>
-								<div class="col-md-6" style="float:none;margin:auto;text-align:center;">
-									<p>No account? <a href="/register" style="color: #d0a772;">Register here!</a></p>
-									<a href="/reset_password" style="color: #d0a772;">Forgot password?</a></p>
+								<div class="col-md-6" style="float:none;margin:auto;">
+									<div class="form-group text-center">
+										<input type="password" class="form-control" placeholder="Password"
+											name="password" id="password" required
+											data-error="Please enter your password">
+										<button type="button" id="btnToggle" class="toggle"><i id="eyeIcon"
+												class="fa fa-eye"></i></button>
+										<div class="help-block with-errors"></div>
+									</div>
 								</div>
-								<div class="col-md-12">
-							<div class="vertical-center">
-								<a href="{{url_for('login')}}" ><div class='g-sign-in-button'>
+							</div>
+							<div class="col-md-12">
+								<div class="submit-button text-center">
+									<p style="color: #dc3545;">{{ error }}</p>
+									<button class="btn btn-common" id="submit" type="submit" style="">Login</button>
+									<div id="msgSubmit" class="h3 text-center hidden"></div>
+									<div class="clearfix"></div>
+								</div>
+							</div>
+							<div class="col-md-6" style="float:none;margin:auto;text-align:center;">
+								<p>No account? <a href="/register" style="color: #d0a772;">Register here!</a></p>
+								<a href="/reset_password" style="color: #d0a772;">Forgot password?</a></p>
+							</div>
+							<div class="col-md-12">
+								<div class="vertical-center">
+									<a href="{{url_for('login')}}">
+										<div class='g-sign-in-button'>
 											<div class=content-wrapper>
 												<div class='logo-wrapper'>
 													<img src='https://developers.google.com/identity/images/g-logo.png'>
 												</div>
 												<div class='text-container'>
-											  <p>Sign in with Google</p>
+													<p>Sign in with Google</p>
+												</div>
 											</div>
-											</div>
-										</div></a>
+										</div>
+									</a>
+								</div>
 							</div>
 						</div>
-							</div>
-						</form>
-					</div>
+					</form>
 				</div>
 			</div>
 		</div>
 	</div>
+</div>
 
 <!-- End Login -->
 
-	<!-- Start Contact info -->
-	<div class="contact-info-box">
-		<div class="container">
-			<div class="row">
-				<div class="col-md-4">
-					<i class="fa fa-volume-control-phone"></i>
-					<div class="overflow-hidden">
-						<h4>Phone</h4>
-						<p class="lead">
-							+65 9203 2103
-						</p>
-					</div>
+<!-- Start Contact info -->
+<div class="contact-info-box">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-4">
+				<i class="fa fa-volume-control-phone"></i>
+				<div class="overflow-hidden">
+					<h4>Phone</h4>
+					<p class="lead">
+						+65 9203 2103
+					</p>
 				</div>
-				<div class="col-md-4">
-					<i class="fa fa-envelope"></i>
-					<div class="overflow-hidden">
-						<h4>Email</h4>
-						<p class="lead">
-							staff@devilkitchen.yay
-						</p>
-					</div>
+			</div>
+			<div class="col-md-4">
+				<i class="fa fa-envelope"></i>
+				<div class="overflow-hidden">
+					<h4>Email</h4>
+					<p class="lead">
+						staff@devilkitchen.yay
+					</p>
 				</div>
-				<div class="col-md-4">
-					<i class="fa fa-map-marker"></i>
-					<div class="overflow-hidden">
-						<h4>Location</h4>
-						<p class="lead">
-							50 Steven Road #02-10, Singapore 025123
-						</p>
-					</div>
+			</div>
+			<div class="col-md-4">
+				<i class="fa fa-map-marker"></i>
+				<div class="overflow-hidden">
+					<h4>Location</h4>
+					<p class="lead">
+						50 Steven Road #02-10, Singapore 025123
+					</p>
 				</div>
 			</div>
 		</div>
 	</div>
-	<!-- End Contact info -->
+</div>
+<!-- End Contact info -->
 
-    <!-- Start Footer -->
-	<footer class="footer-area bg-f">
+<!-- Start Footer -->
+<footer class="footer-area bg-f">
+	<div class="container">
+		<div class="row">
+			<div class="col-lg-3 col-md-6">
+				<h3>About Us</h3>
+				<p>Tom Sellers is the Chef Patron of Devil's Kitchen Restaurant. He dreamed of opening Devil's Kitchen
+					Restaurant at the age of 19, and in April 2013, aged 26, was able to realise his dream. Tom trained
+					at some of the world’s best restaurants including Restaurant Tom Aikens, Noma and Per Se. </p>
+			</div>
+			<div class="col-lg-3 col-md-6">
+				<h3>Opening hours</h3>
+				<p><span class="text-color">Monday: </span> 9AM - 10PM</p>
+				<p><span class="text-color">Tue-Wed :</span> 9AM - 10PM</p>
+				<p><span class="text-color">Thu-Fri :</span> 9AM - 10PM</p>
+				<p><span class="text-color">Sat-Sun :</span> 5PM - 10PM</p>
+			</div>
+			<div class="col-lg-3 col-md-6">
+				<h3>Contact information</h3>
+				<p class="lead">50 Steven Road #02-10, Singapore 025123</p>
+				<p class="lead"><a href="#">+65 9203 2103</a></p>
+				<p><a href="#">staff@devilkitchen.yay</a></p>
+			</div>
+			<div class="col-lg-3 col-md-6">
+				<h3>Subscribe</h3>
+				<div class="subscribe_form">
+					<form class="subscribe_form">
+						<input name="EMAIL" id="subs-email" class="form_input" placeholder="Email Address..."
+							type="email">
+						<button type="submit" class="submit">SUBSCRIBE</button>
+						<div class="clearfix"></div>
+					</form>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<div class="copyright">
 		<div class="container">
 			<div class="row">
-				<div class="col-lg-3 col-md-6">
-					<h3>About Us</h3>
-					<p>Tom Sellers is the Chef Patron of Devil's Kitchen Restaurant. He dreamed of opening Devil's Kitchen Restaurant at the age of 19, and in April 2013, aged 26, was able to realise his dream. Tom trained at some of the world’s best restaurants including Restaurant Tom Aikens, Noma and Per Se. </p>
-				</div>
-				<div class="col-lg-3 col-md-6">
-					<h3>Opening hours</h3>
-					<p><span class="text-color">Monday: </span>  9AM - 10PM</p>
-					<p><span class="text-color">Tue-Wed :</span> 9AM - 10PM</p>
-					<p><span class="text-color">Thu-Fri :</span> 9AM - 10PM</p>
-					<p><span class="text-color">Sat-Sun :</span> 5PM - 10PM</p>
-				</div>
-				<div class="col-lg-3 col-md-6">
-					<h3>Contact information</h3>
-					<p class="lead">50 Steven Road #02-10, Singapore 025123</p>
-					<p class="lead"><a href="#">+65 9203 2103</a></p>
-					<p><a href="#">staff@devilkitchen.yay</a></p>
-				</div>
-				<div class="col-lg-3 col-md-6">
-					<h3>Subscribe</h3>
-					<div class="subscribe_form">
-						<form class="subscribe_form">
-							<input name="EMAIL" id="subs-email" class="form_input" placeholder="Email Address..." type="email">
-							<button type="submit" class="submit">SUBSCRIBE</button>
-							<div class="clearfix"></div>
-						</form>
-					</div>
-
+				<div class="col-lg-12">
+					<p class="company-name">All Rights Reserved. &copy; 2020 <a href="#">Devil's Kitchen Restaurant</a>
+					</p>
 				</div>
 			</div>
 		</div>
+	</div>
 
-		<div class="copyright">
-			<div class="container">
-				<div class="row">
-					<div class="col-lg-12">
-						<p class="company-name">All Rights Reserved. &copy; 2020 <a href="#">Devil's Kitchen Restaurant</a></p>
-					</div>
-				</div>
-			</div>
-		</div>
+</footer>
+<!-- End Footer -->
+<script>
+	let passwordInput = document.getElementById('password'),
+		toggle = document.getElementById('btnToggle'),
+		icon = document.getElementById('eyeIcon');
 
-	</footer>
-	<!-- End Footer -->
-
-	<a href="#" id="back-to-top" title="Back to top" style="display: none;">&uarr;</a>
+	function togglePassword() {
+		if (passwordInput.type === 'password') {
+			passwordInput.type = 'text';
+			icon.classList.add("fa-eye-slash");
+		} else {
+			passwordInput.type = 'password';
+			icon.classList.remove("fa-eye-slash");
+		}
+	}
+	toggle.addEventListener('click', togglePassword, false);
+</script>
+<a href="#" id="back-to-top" title="Back to top" style="display: none;">&uarr;</a>
 
 {% endblock %}
