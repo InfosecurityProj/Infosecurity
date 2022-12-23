@@ -20,7 +20,7 @@ class User(UserMixin,db.Model):
     email = db.Column(db.String(255))
     account_salt = db.Column(db.String(255))
 
-    def __init__(self,username,email,password_hash,account_status,role,title,first_name,last_name,gender,account_salt):
+    def __init__(self,username,email,password_hash,account_status,role,title,first_name,last_name,gender):
         self.user_id = User.id
         self.username = username
         self.password_hash = password_hash
@@ -31,7 +31,7 @@ class User(UserMixin,db.Model):
         self.gender = gender
         self.title = title
         self.email = email
-        self.account_salt = account_salt
+        self.account_salt = User.account_salt
     
     def set_password(self, password):
         Useruuid = str(uuid.uuid4())[:8].encode('utf-8')
@@ -51,7 +51,12 @@ class User(UserMixin,db.Model):
         # self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
-        salt = bytes(self.account_salt.encode('UTF-8'))
+        print(self.account_salt)
+        # salt = bytes(self.account_salt.encode('UTF-8')
+        if isinstance(self.account_salt,bytes):
+            salt = self.account_salt
+        else:
+            salt = bytes(self.account_salt.encode('UTF-8'))
         print(salt,"password salt")
         hashed_user_password = hashlib.pbkdf2_hmac(
             "sha256",  # The hashing algorithm to use

@@ -7,6 +7,7 @@ from app.database import db
 
 app = Flask(__name__)
 app.secret_key = 'NahidaKawaii'
+app.config['PERMANENT_SESSION_LIFETIME'] = 30  # session timeout is 1 hour(3600Sec)
 login_manager = LoginManager()
 login_manager.init_app(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test1.db"
@@ -16,7 +17,7 @@ with app.app_context():
     db.create_all()
     users = User.query.all()
     print(users)
-    if User.query.filter_by(username="admin").first():
+    if User.query.filter_by(username="admin").first() or User.query.filter_by(username="kurokami").first():
     # The "admin" username already exists, so handle the error
         print("admin exist")
         pass
@@ -36,6 +37,7 @@ def load_user(user_id):
 
 @app.route('/')
 def index():
+    session.permanent_session_lifetime = 60 #Resets session backs to 1 minute
     return render_template('index.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -60,6 +62,9 @@ def login():
         if user is None or not user.check_password(password):
             flash('Invalid username or password.')
             return redirect(url_for('login'))
+        if user:
+            session['user_id'] = user.id
+            session['user_role'] = user.role
         login_user(user)
         return redirect(url_for('index'))
     return render_template('login.html', form=CreateUserForm)
@@ -69,6 +74,7 @@ def register():
     create_user_form = CreateUserForm(request.form)
     if current_user.is_authenticated:
         return redirect(url_for('index'))
+    #and create_user_form.validate()
     if request.method == 'POST' :
             username = request.form['username']
             password = request.form['password']
@@ -87,39 +93,84 @@ def register():
     return render_template('register.html', form=create_user_form)
 
 @app.route('/retrieving')
+@login_required
 def retrieving_users():
     if not session.get('type'):
-        session['type'] = 'guest'
-    if current_user.is_authenticated:
-        if current_user.get_role() == "Administrator" :  # edited to prevent path traversal
+        session['type'] = 'Guest'
+    if 'user_id' in session and current_user.is_authenticated:
+        # the user is logged in
+        if session['user_role'] == 'Administrator':
+            if session.get('user_id') is None:#Not working
+                flash("You have been logged out due to 30 minutes of inactivity. Please re-login again.")
+                # the session has timed out, redirect to the login page
+                return redirect(url_for('login'))
             users = User.query.all()
-            response = make_response(render_template('retrieving.html', users=users))
+            response = make_response(render_template('retrieving.html',count=len(users),users=users))
             return response
-        else:
+        elif session['user_role'] == 'User':
             resp = make_response(redirect(url_for('index')))
-            return res**p
-    else:
-        flash("You have been logged out due to 30 minutes of inactivity. Please re-login again.")
-        resp = make_response(redirect(url_for('login')))
-        return resp
-
+            return resp
+        else:
+            resp = make_response(redirect(url_for('login')))
+            return resp
+    
+    
+# Delete user
+@app.route('/deleteUser/<int:id>', methods=['POST'])
+def delete_user(id):
+    if 'user_id' in session and current_user.is_authenticated:
+        if session['user_role'] == 'Administrator':
+            user = User.query.filter_by(id=id).first()
+            db.session.delete(user)
+            db.session.commit()
+            response = make_response(redirect(url_for('retrieving_users')))
+            return response
+        elif session['user_role'] == 'User':
+            resp = make_response(redirect(url_for('index')))
+            return resp
+        else:
+            resp = make_response(redirect(url_for('login')))
+            return resp
+    # session['user_deleted'] = user.get_first_name() + ' ' + user.get_last_name()
+    
 # profile
 @app.route("/profile")
 def profile():
     if not session.get('type'):
-        session['type'] = 'guest'
-    if current_user.get_role() == "Administrator":
-        resp = make_response(render_template('profile.html'))
-        return resp
-    else:
-        flash("You have been logged out due to 30 minutes of inactivity. Please re-login again.")
+        session['type'] = 'Guest'
+    if 'user_id' in session and current_user.is_authenticated:
+        if session['user_role'] == 'Administrator':
+            resp = make_response(render_template('profile.html'))
+            return resp
+        elif session['user_role'] == 'User':
+            users = User.query.all()
+            resp = make_response(render_template('profile.html', ))
+            return resp
+        else:
+            flash("You have been logged out due to 30 minutes of inactivity. Please re-login again.")
+            resp = make_response(redirect(url_for('login')))
+            return resp
+    if 'user_role' in session and session['user_role'] == 'guest':# the user is a guest
+        flash("Please login to continue")
         resp = make_response(redirect(url_for('login')))
         return resp
+        
     
 
 @app.route("/logout")
 @login_required
 def logout():
+    session.pop('user_id', None)
+    session.pop('user_role', None)
     logout_user()
+    session['type'] = 'Guest'
     flash("Logout successful!")
     return redirect(url_for("login"))
+
+@app.errorhandler(401)#webpage for 401
+def unauthorized(error):
+    return render_template('404.html')
+
+@app.errorhandler(404)#webpage for 401
+def not_found_error(error):
+    return render_template('404.html')
