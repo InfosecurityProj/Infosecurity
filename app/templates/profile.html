@@ -33,7 +33,6 @@
 		</div>
 	</div>
 
-{% for profile in profile_user_list %}
 <div class="reservation-box">
 	<div class="container">
 		<div class = "text-center">
@@ -46,21 +45,21 @@
 					<p>First name: {{ profile.get_first_name() }}</p>
 					<p>Last name: {{ profile.get_last_name() }}</p>
 					<p>Gender: {{ profile.get_gender() }}</p>
-					<p>Email: {{ profile.get_emails() }}</p>
+					<p>Email: {{ profile.get_email() }}</p>
 				</div>
 			</div>
 
 			<div class="col-md-12">
 				<div class="submit-button text-center">
-					<a style="display:inline-block;" href="/updateU/{{profile.get_user_id()}}" class="btn btn-common">Update</a>
+					<a style="display:inline-block;" href="/updateU/{{profile.get_id()}}" class="btn btn-common">Update</a>
 					<a style="display:inline-block;">
-					<form action="{{url_for('delete_user', id=profile.get_user_id())}}" method="POST">
+					<form action="{{url_for('delete_user', id=profile.get_id())}}" method="POST">
 
-			<button style="display:inline-block;" type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal_{{profile.get_user_id()}}">
+			<button style="display:inline-block;" type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal_{{profile.get_id()}}">
               Delete
             </button>
 			<!-- The Modal -->
-            <div class="modal" id="myModal_{{profile.get_user_id()}}">
+            <div class="modal" id="myModal_{{profile.get_id()}}">
               <div class="modal-dialog">
                 <div class="modal-content">
 
@@ -95,7 +94,6 @@
 </div>
 </div>
 <!-- End Profile Details -->
-{% endfor %}
 
 	<!-- Start Footer -->
 	<footer class="footer-area bg-f">

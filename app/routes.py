@@ -4,10 +4,11 @@ from sqlalchemy import or_
 from app.Forms import *
 from app.models import User
 from app.database import db
+import hashlib,uuid
 
 app = Flask(__name__)
 app.secret_key = 'NahidaKawaii'
-app.config['PERMANENT_SESSION_LIFETIME'] = 30  # session timeout is 1 hour(3600Sec)
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # session timeout is 1 hour(3600Sec)
 login_manager = LoginManager()
 login_manager.init_app(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test1.db"
@@ -96,7 +97,7 @@ def register():
 @login_required
 def retrieving_users():
     if not session.get('type'):
-        session['type'] = 'Guest'
+        session['user_role'] = 'Guest'
     if 'user_id' in session and current_user.is_authenticated:
         # the user is logged in
         if session['user_role'] == 'Administrator':
@@ -113,8 +114,65 @@ def retrieving_users():
         else:
             resp = make_response(redirect(url_for('login')))
             return resp
-    
-    
+
+# Update user
+@app.route('/updateU/<int:id>/', methods=['GET', 'POST'])
+def update_user(id):
+    error = ''
+    update_user_form = CreateUserForm(request.form)
+    if request.method == 'POST' and update_user_form.validate():
+        user = User.query.filter_by(id=id).first()
+        existing_user_email = User.query.filter(User.email != user.email).all()
+        
+        if update_user_form.email.data in [email.email for email in existing_user_email]:
+            error = "email address already in use!"
+
+        else:
+            user.first_name = update_user_form.first_name.data
+            user.last_name = update_user_form.last_name.data
+            user.gender = update_user_form.gender.data
+            user.email = update_user_form.email.data
+            user.title = update_user_form.title.data
+
+            Useruuid = str(uuid.uuid4())[:8].encode('utf-8')
+            salt = bytes(hashlib.sha256(Useruuid).hexdigest(), "utf-8")
+            user.account_salt = salt
+            # print(salt,"password salt")
+            hashed_password = hashlib.pbkdf2_hmac(
+                "sha256",  # The hashing algorithm to use
+                update_user_form.password.data.encode(),  # The password to hash, as bytes
+                salt,  # The salt to use, as bytes
+                100000  # The number of iterations to use
+            )
+            user.password_hash = hashed_password.hex()
+
+            db.session.commit()
+            if session['user_role'] == "Administrator":
+                response = make_response(redirect(url_for('retrieving_users')))
+                return response
+            elif session['user_role'] == "User":
+                response = make_response(redirect(url_for('profile')))
+                return response
+            else:
+                response = make_response(redirect(url_for('login')))
+                return response
+        resp = make_response(
+            render_template('updateU.html', form=update_user_form, error=error))
+        return resp
+
+    else:
+        user = User.query.filter_by(id=id).first()
+        update_user_form.first_name.data = user.first_name
+        update_user_form.last_name.data = user.last_name
+        update_user_form.gender.data = user.gender
+        update_user_form.title.data = user.title
+        update_user_form.email.data = user.email
+        update_user_form.password.data = user.password_hash
+
+        resp = make_response(
+            render_template('updateU.html', form=update_user_form, error=error))
+        return resp
+
 # Delete user
 @app.route('/deleteUser/<int:id>', methods=['POST'])
 def delete_user(id):
@@ -137,40 +195,39 @@ def delete_user(id):
 @app.route("/profile")
 def profile():
     if not session.get('type'):
-        session['type'] = 'Guest'
+        session['user_role'] = 'Guest'
     if 'user_id' in session and current_user.is_authenticated:
         if session['user_role'] == 'Administrator':
-            resp = make_response(render_template('profile.html'))
+            user = User.query.filter_by(id=session['user_id']).first()
+            resp = make_response(render_template('profile.html', profile=user))
             return resp
-        elif session['user_role'] == 'User':
-            users = User.query.all()
-            resp = make_response(render_template('profile.html', ))
+        if session['user_role'] == 'User':
+            user = User.query.filter_by(id=session['user_id']).first()
+            resp = make_response(render_template('profile.html', profile=user))
             return resp
         else:
             flash("You have been logged out due to 30 minutes of inactivity. Please re-login again.")
             resp = make_response(redirect(url_for('login')))
             return resp
-    if 'user_role' in session and session['user_role'] == 'guest':# the user is a guest
+    if 'user_role' in session and session['user_role'] == 'Guest':# the user is a guest
         flash("Please login to continue")
         resp = make_response(redirect(url_for('login')))
         return resp
         
-    
-
 @app.route("/logout")
 @login_required
 def logout():
     session.pop('user_id', None)
     session.pop('user_role', None)
     logout_user()
-    session['type'] = 'Guest'
+    session['user_role'] = 'Guest'
     flash("Logout successful!")
     return redirect(url_for("login"))
 
-@app.errorhandler(401)#webpage for 401
-def unauthorized(error):
-    return render_template('404.html')
+# @app.errorhandler(401)#webpage for 401
+# def unauthorized(error):
+#     return render_template('404.html')
 
-@app.errorhandler(404)#webpage for 401
-def not_found_error(error):
-    return render_template('404.html')
+# @app.errorhandler(404)#webpage for 401
+# def not_found_error(error):
+#     return render_template('404.html')
