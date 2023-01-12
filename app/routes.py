@@ -20,14 +20,14 @@ with app.app_context():
     print(users)
     if User.query.filter_by(username="admin").first() or User.query.filter_by(username="kurokami").first():
     # The "admin" username already exists, so handle the error
-        print("admin exist")
+        # print("admin exist")
         pass
     else:
         # The "admin" username does not exist, so create a new user
-        admin=User(username="admin",email="admin@gmail.com",password_hash="7a14def6c43d661e14c59a3dd7174f617137b338ea128d428868e677dc3bed00",account_status="1",role="Administrator",
-                        title="Mister",first_name="admin",last_name=" ",gender="M",account_salt="7f7ae7b152053e0e99d2db2cdb8caea759c473353322c8de03798357c0810b88")
-        kurokami=User(username="kurokami",email="kuro@gmail.com",password_hash="93c8033745689de41d5966ef63f56cf0d608658c284509eefd75de2335459c7f",account_status="1",role="Administrator",
-                        title="Mister",first_name="kurokami",last_name="desu",gender="M",account_salt="845a111eb9585de318efd85a4810099eeb82903cc3b89c8b9ccfd6a5288dcea8")
+        admin=User(username="admin",email="admin@gmail.com",password_hash="7a14def6c43d661e14c59a3dd7174f617137b338ea128d428868e677dc3bed00",role="Administrator",
+                        title="Mister",first_name="admin",last_name=" ",gender="M",account_salt="7f7ae7b152053e0e99d2db2cdb8caea759c473353322c8de03798357c0810b88",account_status="enabled")
+        kurokami=User(username="kurokami",email="kuro@gmail.com",password_hash="93c8033745689de41d5966ef63f56cf0d608658c284509eefd75de2335459c7f",role="Administrator",
+                        title="Mister",first_name="kurokami",last_name="desu",gender="M",account_salt="845a111eb9585de318efd85a4810099eeb82903cc3b89c8b9ccfd6a5288dcea8",account_status="enabled")
         db.session.add(admin)
         db.session.add(kurokami)
         db.session.commit()
@@ -60,14 +60,27 @@ def login():
         #     flash('Account is disabled.Contact support for help.')
         #     return redirect(url_for('login'))
         # print(user.get_account_status,"account_status")
-        if user is None or not user.check_password(password):
-            flash('Invalid username or password.')
-            return redirect(url_for('login'))
-        if user:
-            session['user_id'] = user.id
-            session['user_role'] = user.role
-        login_user(user)
-        return redirect(url_for('index'))
+        if user is not None and user.check_password(password):
+            if user.account_status == 'enabled':
+                session['user_id'] = user.id
+                session['user_role'] = user.role
+                login_user(user)
+                return redirect(url_for("index"))
+            else:
+                flash("Your account is disabled,Contact support for help.")
+                return redirect(url_for("login"))
+        else:
+            flash("Incorrect username or password.")
+            return redirect(url_for("login"))
+
+        # if user is None or not user.check_password(password):
+        #     flash('Invalid username or password.')
+        #     return redirect(url_for('login'))
+        # if user:
+        #     session['user_id'] = user.id
+        #     session['user_role'] = user.role
+        # login_user(user)
+        # return redirect(url_for('index'))
     return render_template('login.html', form=CreateUserForm)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -84,7 +97,7 @@ def register():
             gender = request.form['gender']
             title = request.form['title']
             email = request.form['email']
-            user = User(username=username,email=email,password_hash=password,account_status="1",role="User",
+            user = User(username=username,email=email,password_hash=password,account_status="enabled",role="User",
                         title=title,first_name=first_name,last_name=last_name,gender=gender)
             user.set_password(password)
             db.session.add(user)
@@ -96,7 +109,7 @@ def register():
 @app.route('/retrieving')
 @login_required
 def retrieving_users():
-    if not session.get('type'):
+    if not session.get('user_role'):
         session['user_role'] = 'Guest'
     if 'user_id' in session and current_user.is_authenticated:
         # the user is logged in
@@ -194,7 +207,8 @@ def delete_user(id):
 # profile
 @app.route("/profile")
 def profile():
-    if not session.get('type'):
+    #print(session) debugging session
+    if not session.get('user_role'):
         session['user_role'] = 'Guest'
     if 'user_id' in session and current_user.is_authenticated:
         if session['user_role'] == 'Administrator':
@@ -209,7 +223,7 @@ def profile():
             flash("You have been logged out due to 30 minutes of inactivity. Please re-login again.")
             resp = make_response(redirect(url_for('login')))
             return resp
-    if 'user_role' in session and session['user_role'] == 'Guest':# the user is a guest
+    if 'user_role' in session and session['user_role'] == 'Guest':# checks for if the user is a guest
         flash("Please login to continue")
         resp = make_response(redirect(url_for('login')))
         return resp
@@ -223,6 +237,21 @@ def logout():
     session['user_role'] = 'Guest'
     flash("Logout successful!")
     return redirect(url_for("login"))
+
+@app.route("/delete_account", methods=["GET", "POST"])
+def delete_account():
+    if request.method == "POST":
+        if session['user_role'] == "User" and current_user.is_authenticated:
+            #check form fields and validate request
+            if form_data_is_valid:
+                #delete account
+                #flash a message
+                #redirect to login page
+            else:
+                #flash an error message 
+                #render the same page
+
+
 
 # @app.errorhandler(401)#webpage for 401
 # def unauthorized(error):

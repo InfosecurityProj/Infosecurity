@@ -11,7 +11,6 @@ class User(UserMixin,db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     password_hash = db.Column(db.String(128))
-    account_status = db.Column(db.Integer, default="1")
     role = db.Column(db.String(80), default="User")
     first_name = db.Column(db.String(20))
     last_name = db.Column(db.String(20))
@@ -19,12 +18,12 @@ class User(UserMixin,db.Model):
     title = db.Column(db.String(10), default="Mr")
     email = db.Column(db.String(255))
     account_salt = db.Column(db.String(255))
+    account_status = db.Column(db.String(10), default="enabled")
 
-    def __init__(self,username,email,password_hash,account_status,role,title,first_name,last_name,gender):
+    def __init__(self,username,email,password_hash,role,title,first_name,last_name,gender,account_status):
         self.user_id = User.id
         self.username = username
         self.password_hash = password_hash
-        self.account_status = account_status
         self.role = role
         self.first_name = first_name
         self.last_name = last_name
@@ -32,6 +31,7 @@ class User(UserMixin,db.Model):
         self.title = title
         self.email = email
         self.account_salt = User.account_salt
+        self.account_status = account_status
     
     def set_password(self, password):
         Useruuid = str(uuid.uuid4())[:8].encode('utf-8')
