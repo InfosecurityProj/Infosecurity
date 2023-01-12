@@ -38,6 +38,7 @@ def load_user(user_id):
 
 @app.route('/')
 def index():
+    print(session)
     session.permanent_session_lifetime = 60 #Resets session backs to 1 minute
     return render_template('index.html')
 
@@ -146,7 +147,6 @@ def update_user(id):
             user.gender = update_user_form.gender.data
             user.email = update_user_form.email.data
             user.title = update_user_form.title.data
-
             Useruuid = str(uuid.uuid4())[:8].encode('utf-8')
             salt = bytes(hashlib.sha256(Useruuid).hexdigest(), "utf-8")
             user.account_salt = salt
@@ -158,7 +158,6 @@ def update_user(id):
                 100000  # The number of iterations to use
             )
             user.password_hash = hashed_password.hex()
-
             db.session.commit()
             if session['user_role'] == "Administrator":
                 response = make_response(redirect(url_for('retrieving_users')))
@@ -238,20 +237,38 @@ def logout():
     flash("Logout successful!")
     return redirect(url_for("login"))
 
-@app.route("/delete_account", methods=["GET", "POST"])
+@app.route('/delete_account', methods=['POST'])
 def delete_account():
-    if request.method == "POST":
-        if session['user_role'] == "User" and current_user.is_authenticated:
-            #check form fields and validate request
-            if form_data_is_valid:
-                #delete account
-                #flash a message
-                #redirect to login page
-            else:
-                #flash an error message 
-                #render the same page
-
-
+    # Get the user's password from the form
+    user_id = session.get('user_id')
+    password = request.form.get('password')
+    user = User.query.filter_by(id=user_id).first()
+    Useruuid = str(uuid.uuid4())[:8].encode('utf-8')
+    salt = bytes(hashlib.sha256(Useruuid).hexdigest(), "utf-8")
+    salt = user.account_salt
+    # print(salt,"password salt")
+    hashed_password = hashlib.pbkdf2_hmac(
+        "sha256",  # The hashing algorithm to use
+        password.encode(),  # The password to hash, as bytes
+        salt,  # The salt to use, as bytes
+        100000  # The number of iterations to use
+    )
+    # print(f"hashed_password{hashed_password.hex()} user.password:{user.password_hash}")
+    if user.password_hash == hashed_password.hex():
+        # print(session['user_id'])
+        # If the password is correct, delete the account
+        user = User.query.filter_by(id=user_id).first()
+        print(f"userid:{user}")
+        db.session.delete(user)
+        db.session.commit()
+        # Log the user out and redirect them to the login page
+        session.pop('user', None)
+        resp = make_response(redirect(url_for('login')))
+        return resp
+    else:
+        flash("The password you entered does not match our records. Please try again.")
+        resp = make_response(redirect(url_for('profile')))
+        return resp
 
 # @app.errorhandler(401)#webpage for 401
 # def unauthorized(error):
