@@ -25,7 +25,11 @@
 # )
 # print(hashed_password,"pw hash")
 
-import hashlib,uuid
-uuid = str(uuid.uuid4())[:8].encode('utf-8')
-salt = hashlib.sha256(uuid).hexdigest()
-print(salt)
+# import hashlib,uuid
+# uuid = str(uuid.uuid4())[:8].encode('utf-8')
+# salt = hashlib.sha256(uuid).hexdigest()
+# print(salt)
+
+import pyotp
+totp = pyotp.TOTP("JBSWY3DPEHPK3PXP")
+print("Current OTP:", totp.now())

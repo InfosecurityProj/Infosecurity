@@ -18,11 +18,16 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="contact-block">
-                    <form method="post" action="">
+                    <!-- <form method="POST" action="{{ url_for('verify') }}">
+                        <label for="code">Enter OTP code:</label>
+                        <input type="text" id="code" name="code">
+                        <input type="submit" value="Verify">
+                    </form>                     -->
+                    <form method="POST" action="{{ url_for('verify') }}">
                         <div class="form-group">
                             <div class="col-md-6" style="float:none;margin:auto;">
                                 <div class="form-group text-center">
-                                    <input type="text" class="form-control" name="otp_code"
+                                    <input type="text" class="form-control" name="code" id="code"
                                            placeholder="Enter the OTP code here" required>
                                     <div class="help-block with-errors"></div>
                                 </div>
@@ -31,7 +36,7 @@
                         <div class="col-md-12">
                             <div class="submit-button text-center">
                                 <p style="color: #dc3545;">{{ error }}</p>
-                                <button type="submit" class="btn btn-common">Validate OTP</button>
+                                <button type="submit" class="btn btn-common" value="verify">Validate OTP</button>
                                 <div id="msgSubmit" class="h3 text-center hidden"></div>
                                 <div class="clearfix"></div>
                             </div>

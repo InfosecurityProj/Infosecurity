@@ -3,8 +3,11 @@ from flask_login import LoginManager,login_required,logout_user,current_user,log
 from sqlalchemy import or_
 from app.Forms import *
 from app.models import User
-from app.database import db
-import hashlib,uuid
+from app.database import db,db2
+from flask_mail import Mail,Message
+from pyotp import TOTP
+from pyqrcode import QRCode
+import hashlib,uuid,random
 
 app = Flask(__name__)
 app.secret_key = 'NahidaKawaii'
@@ -13,9 +16,21 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test1.db"
 db.init_app(app)
+# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///Orders.db"
+# db2.init_app(app)
+
+'''Email Configuration'''
+app.config['MAIL_SERVER'] = 'smtp-mail.outlook.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USERNAME'] = 'testyamifood@outlook.com'
+app.config['MAIL_PASSWORD'] = 'TestYami123'
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+mail = Mail(app)
 
 with app.app_context():
     db.create_all()
+    # db2.create_all()
     users = User.query.all()
     print(users)
     if User.query.filter_by(username="admin").first() or User.query.filter_by(username="kurokami").first():
@@ -55,18 +70,15 @@ def login():
         # user,useremail = User.query.filter_by(username=username).first(),User.query.filter_by(email=email).first()
         # user = User.query.filter(or_(username==username,email==email)).first()
         print(user)
-        # print(user.check_password(password),"passwordcheck")
-        # if user.get_account_status == 0:
-        #     print("account disbaled")
-        #     flash('Account is disabled.Contact support for help.')
-        #     return redirect(url_for('login'))
-        # print(user.get_account_status,"account_status")
         if user is not None and user.check_password(password):
             if user.account_status == 'enabled':
                 session['user_id'] = user.id
                 session['user_role'] = user.role
                 login_user(user)
                 return redirect(url_for("index"))
+            elif user.account_status == 'not_verified':
+                flash("Your account is disabled,Contact support for help.")
+                return redirect(url_for("login"))
             else:
                 flash("Your account is disabled,Contact support for help.")
                 return redirect(url_for("login"))
@@ -86,10 +98,10 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    global verification_code
     create_user_form = CreateUserForm(request.form)
     if current_user.is_authenticated:
         return redirect(url_for('index'))
-    #and create_user_form.validate()
     if request.method == 'POST' :
             username = request.form['username']
             password = request.form['password']
@@ -98,14 +110,71 @@ def register():
             gender = request.form['gender']
             title = request.form['title']
             email = request.form['email']
-            user = User(username=username,email=email,password_hash=password,account_status="enabled",role="User",
-                        title=title,first_name=first_name,last_name=last_name,gender=gender)
-            user.set_password(password)
-            db.session.add(user)
-            db.session.commit()
-            flash('Congratulations, you are now a registered user!')
-            return redirect(url_for('login'))
+            session['verification_email'] = email
+            session['username'] = username
+            existing_user = User.query.filter_by(username=username).first()
+            existing_email = User.query.filter_by(email=email).first()
+            if existing_user:
+                flash('This username already exists. Please choose a different one.')
+                return redirect(url_for('login'))
+            elif existing_email:
+                flash('This email already exists. Please choose a different one.')
+                return redirect(url_for('login'))
+            else:
+                user = User(username=username,email=email,password_hash=password,account_status="not_verified",role="User",
+                            title=title,first_name=first_name,last_name=last_name,gender=gender)
+                user.set_password(password)
+                db.session.add(user)
+                db.session.commit()
+                # Generate a random 4-digit verification code
+                verification_code = str(random.randint(1000, 9999))
+                # Send an email with the verification code
+                msg = Message("Verification Code",
+                            sender="testyamifood@outlook.com",
+                            recipients=[email])
+                msg.body = "Welcome {}!\nThanks for signing up, you’re almost done creating your account!.\nYour verification code is: {}.\nPlease complete the account verification process in 30 minutes.".format(username,verification_code)
+                mail.send(msg)
+                flash('Congratulations, you are now a registered user!')
+                return redirect(url_for('verify'))
     return render_template('register.html', form=create_user_form)
+
+@app.route('/verify', methods=['GET', 'POST'])
+def verify():
+    if request.method == 'POST':
+        entered_code = request.form['code']
+        email = session.get('verification_email')
+        user = User.query.filter_by(email=email).first()
+        if entered_code == verification_code:
+            user.account_status = 'enabled'
+            db.session.commit()
+            flash('Your account has been verified. You can now login.')
+            return redirect(url_for('login'))
+        else:
+            flash('Invalid verification code.')
+    return render_template('validate.html')
+
+# @app.route('/register', methods=['GET', 'POST'])
+# def register():
+#     create_user_form = CreateUserForm(request.form)
+#     if current_user.is_authenticated:
+#         return redirect(url_for('index'))
+#     #and create_user_form.validate()
+#     if request.method == 'POST' :
+#             username = request.form['username']
+#             password = request.form['password']
+#             first_name = request.form['first_name']
+#             last_name = request.form['last_name']
+#             gender = request.form['gender']
+#             title = request.form['title']
+#             email = request.form['email']
+#             user = User(username=username,email=email,password_hash=password,account_status="enabled",role="User",
+#                         title=title,first_name=first_name,last_name=last_name,gender=gender)
+#             user.set_password(password)
+#             db.session.add(user)
+#             db.session.commit()
+#             flash('Congratulations, you are now a registered user!')
+#             return redirect(url_for('login'))
+#     return render_template('register.html', form=create_user_form)
 
 @app.route('/retrieving')
 @login_required
@@ -269,6 +338,7 @@ def delete_account():
         flash("The password you entered does not match our records. Please try again.")
         resp = make_response(redirect(url_for('profile')))
         return resp
+
 
 # @app.errorhandler(401)#webpage for 401
 # def unauthorized(error):
