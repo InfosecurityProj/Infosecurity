@@ -19,6 +19,7 @@ class User(UserMixin,db.Model):
     email = db.Column(db.String(255))
     account_salt = db.Column(db.String(255))
     account_status = db.Column(db.String(10), default="enabled")
+    multifactorauth = db.Column(db.String(10), default="disabled")
 
     def __init__(self,username,email,password_hash,role,title,first_name,last_name,gender,account_status):
         self.user_id = User.id
@@ -30,7 +31,6 @@ class User(UserMixin,db.Model):
         self.gender = gender
         self.title = title
         self.email = email
-        self.account_salt = User.account_salt
         self.account_status = account_status
     
     def set_password(self, password):
@@ -108,6 +108,9 @@ class User(UserMixin,db.Model):
     def set_account_salt(self,account_salt):
         self.account_salt = account_salt
     
+    def set_multifactorauth(self,multifactorauth):
+        self.multifactorauth = multifactorauth
+    
     def get_id(self):
         return self.id
     
@@ -140,3 +143,6 @@ class User(UserMixin,db.Model):
     
     def get_account_salt(self):
         return self.account_salt
+    
+    def get_multifactorauth(self):
+        return self.multifactorauth

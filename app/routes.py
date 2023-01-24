@@ -6,8 +6,8 @@ from app.models import User
 from app.database import db,db2
 from flask_mail import Mail,Message
 from pyotp import TOTP
-from pyqrcode import QRCode
-import hashlib,uuid,random
+from io import BytesIO
+import hashlib,uuid,random,pyotp,pyqrcode,base64
 
 app = Flask(__name__)
 app.secret_key = 'NahidaKawaii'
@@ -19,7 +19,7 @@ db.init_app(app)
 # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///Orders.db"
 # db2.init_app(app)
 
-'''Email Configuration'''
+#Email Configuration
 app.config['MAIL_SERVER'] = 'smtp-mail.outlook.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USERNAME'] = 'testyamifood@outlook.com'
@@ -40,9 +40,9 @@ with app.app_context():
     else:
         # The "admin" username does not exist, so create a new user
         admin=User(username="admin",email="admin@gmail.com",password_hash="7a14def6c43d661e14c59a3dd7174f617137b338ea128d428868e677dc3bed00",role="Administrator",
-                        title="Mister",first_name="admin",last_name=" ",gender="M",account_salt="7f7ae7b152053e0e99d2db2cdb8caea759c473353322c8de03798357c0810b88",account_status="enabled")
+                        title="Mister",first_name="admin",last_name=" ",gender="M",account_salt="7f7ae7b152053e0e99d2db2cdb8caea759c473353322c8de03798357c0810b88",account_status="enabled",multifactorauth="disabled")
         kurokami=User(username="kurokami",email="kuro@gmail.com",password_hash="93c8033745689de41d5966ef63f56cf0d608658c284509eefd75de2335459c7f",role="Administrator",
-                        title="Mister",first_name="kurokami",last_name="desu",gender="M",account_salt="845a111eb9585de318efd85a4810099eeb82903cc3b89c8b9ccfd6a5288dcea8",account_status="enabled")
+                        title="Mister",first_name="kurokami",last_name="desu",gender="M",account_salt="845a111eb9585de318efd85a4810099eeb82903cc3b89c8b9ccfd6a5288dcea8",account_status="enabled",multifactorauth="disabled")
         db.session.add(admin)
         db.session.add(kurokami)
         db.session.commit()
@@ -77,7 +77,7 @@ def login():
                 login_user(user)
                 return redirect(url_for("index"))
             elif user.account_status == 'not_verified':
-                flash("Your account is disabled,Contact support for help.")
+                flash("Your account is not verified,Contact support for help.")
                 return redirect(url_for("login"))
             else:
                 flash("Your account is disabled,Contact support for help.")
@@ -133,8 +133,8 @@ def register():
                             sender="testyamifood@outlook.com",
                             recipients=[email])
                 msg.body = "Welcome {}!\nThanks for signing up, you’re almost done creating your account!.\nYour verification code is: {}.\nPlease complete the account verification process in 30 minutes.".format(username,verification_code)
-                mail.send(msg)
-                flash('Congratulations, you are now a registered user!')
+                #mail.send(msg)
+                #flash('Congratulations, you are now a registered user!')
                 return redirect(url_for('verify'))
     return render_template('register.html', form=create_user_form)
 
@@ -338,7 +338,52 @@ def delete_account():
         flash("The password you entered does not match our records. Please try again.")
         resp = make_response(redirect(url_for('profile')))
         return resp
+    
+@app.route('/submit_password', methods=['POST'])
+def submit_password():
+    entered_password = request.form['password']
+    user_id = session.get('user_id')
+    user = User.query.filter_by(id=user_id).first()
+    Useruuid = str(uuid.uuid4())[:8].encode('utf-8')
+    salt = bytes(hashlib.sha256(Useruuid).hexdigest(), "utf-8")
+    salt = user.account_salt
+    # print(salt,"password salt")
+    hashed_password = hashlib.pbkdf2_hmac(
+        "sha256",  # The hashing algorithm to use
+        entered_password.encode(),  # The password to hash, as bytes
+        salt,  # The salt to use, as bytes
+        100000  # The number of iterations to use
+    )
+    user_password = user.password_hash()  # Retrieve user's password from the database
+    if user.password_hash != hashed_password.hex():
+    #if entered_password != user_password:
+        flash('Incorrect password')
+        return redirect(url_for('profile'))
+    email = 'example@example.com'
+    app_name = "HoHoHotels"
+    secret = pyotp.random_base32()
+    totp = pyotp.TOTP(secret, interval=30)
+    qr = pyqrcode.create(totp.provisioning_uri(email,issuer_name=app_name))
+    buffer = BytesIO()
+    qr.svg(buffer)
+    qr_svg_str = buffer.getvalue()
+    qr_svg_b64 = base64.b64encode(qr_svg_str).decode()
+    return render_template('profile.html', qr_svg_b64=qr_svg_b64)
 
+
+#TOTP Code Testing
+@app.route('/code')
+def generate_qr_code():
+    email = 'example@example.com'
+    app_name = "HoHoHotels"
+    secret = pyotp.random_base32()
+    totp = pyotp.TOTP(secret, interval=30)
+    qr = pyqrcode.create(totp.provisioning_uri(email,issuer_name=app_name))
+    buffer = BytesIO()
+    qr.svg(buffer)
+    qr_svg_str = buffer.getvalue()
+    qr_svg_b64 = base64.b64encode(qr_svg_str).decode()
+    return render_template('code.html', qr_svg_b64=qr_svg_b64)
 
 # @app.errorhandler(401)#webpage for 401
 # def unauthorized(error):

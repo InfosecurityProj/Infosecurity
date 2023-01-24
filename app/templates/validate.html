@@ -2,6 +2,18 @@
 {% block title %} Devil's Kitchen - Validate OTP {% endblock %}
 
 {% block content %}
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-primary alert-dismissible fade show" role="alert">
+    <span>{{ message }}</span>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
 <br>
 <br>
 <br>
@@ -28,7 +40,7 @@
                             <div class="col-md-6" style="float:none;margin:auto;">
                                 <div class="form-group text-center">
                                     <input type="text" class="form-control" name="code" id="code"
-                                           placeholder="Enter the OTP code here" required>
+                                        placeholder="Enter the OTP code here" required>
                                     <div class="help-block with-errors"></div>
                                 </div>
                             </div>
