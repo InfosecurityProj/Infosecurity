@@ -21,7 +21,7 @@ class User(UserMixin,db.Model):
     account_status = db.Column(db.String(10), default="enabled")
     multifactorauth = db.Column(db.String(10), default="disabled")
 
-    def __init__(self,username,email,password_hash,role,title,first_name,last_name,gender,account_status,account_salt,multifactorauth):
+    def __init__(self,username,email,password_hash,role,title,first_name,last_name,gender,account_status):
         self.user_id = User.id
         self.username = username
         self.password_hash = password_hash
@@ -32,8 +32,6 @@ class User(UserMixin,db.Model):
         self.title = title
         self.email = email
         self.account_status = account_status
-        self.account_salt  = account_salt
-        self.multifactorauth = multifactorauth
     
     def set_password(self, password):
         Useruuid = str(uuid.uuid4())[:8].encode('utf-8')
@@ -149,66 +147,66 @@ class User(UserMixin,db.Model):
     def get_multifactorauth(self):
         return self.multifactorauth
 
-# class Order(UserMixin,db.Model):
-#     count_id = 0
-#     __tablename__ = 'orders'
-#     id = db2.Column(db2.Integer, primary_key=True)
-#     order_item = db2.Column(db2.String(50))
-#     meat = db2.Column(db2.String(50))
-#     sauce = db2.Column(db2.String(50))
-#     remarks = db2.Column(db2.String(50))
-#     price = db2.Column(db2.Float)
-#     email = db2.Column(db2.String(50))
-#     user_id = db2.Column(db2.Integer, db2.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+class Order(UserMixin,db.Model):
+    count_id = 0
+    __tablename__ = 'orders'
+    id = db2.Column(db2.Integer, primary_key=True)
+    order_item = db2.Column(db2.String(50))
+    meat = db2.Column(db2.String(50))
+    sauce = db2.Column(db2.String(50))
+    remarks = db2.Column(db2.String(50))
+    price = db2.Column(db2.Float)
+    email = db2.Column(db2.String(50))
+    user_id = db2.Column(db2.Integer, db2.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     
-#     def __init__(self, order_item, meat, sauce, remarks, price, email):
-#         Order.count_id += 1
-#         self.__order_id = Order.count_id
-#         self.__order_item = order_item
-#         self.__meat = meat
-#         self.__sauce = sauce
-#         self.__remarks = remarks
-#         self.__price = price
-#         self.__email = email
+    def __init__(self, order_item, meat, sauce, remarks, price, email):
+        Order.count_id += 1
+        self.__order_id = Order.count_id
+        self.__order_item = order_item
+        self.__meat = meat
+        self.__sauce = sauce
+        self.__remarks = remarks
+        self.__price = price
+        self.__email = email
 
-#     def get_order_id(self):
-#         return self.__order_id
+    def get_order_id(self):
+        return self.__order_id
 
-#     def get_order_item(self):
-#         return self.__order_item
+    def get_order_item(self):
+        return self.__order_item
 
-#     def get_meat(self):
-#         return self.__meat
+    def get_meat(self):
+        return self.__meat
 
-#     def get_sauce(self):
-#         return self.__sauce
+    def get_sauce(self):
+        return self.__sauce
 
-#     def get_remarks(self):
-#         return self.__remarks
+    def get_remarks(self):
+        return self.__remarks
 
-#     def get_price(self):
-#         return self.__price
+    def get_price(self):
+        return self.__price
 
-#     def get_email(self):
-#         return self.__email
+    def get_email(self):
+        return self.__email
 
-#     def set_order_id(self, order_id):
-#         self.__order_id = order_id
+    def set_order_id(self, order_id):
+        self.__order_id = order_id
 
-#     def set_order_item(self, order_item):
-#         self.__order_item = order_item
+    def set_order_item(self, order_item):
+        self.__order_item = order_item
 
-#     def set_meat(self, meat):
-#         self.__meat = meat
+    def set_meat(self, meat):
+        self.__meat = meat
 
-#     def set_sauce(self, sauce):
-#         self.__sauce = sauce
+    def set_sauce(self, sauce):
+        self.__sauce = sauce
 
-#     def set_remarks(self, remarks):
-#         self.__remarks = remarks
+    def set_remarks(self, remarks):
+        self.__remarks = remarks
 
-#     def set_price(self, price):
-#         self.__price = price
+    def set_price(self, price):
+        self.__price = price
 
-#     def set_email(self, email):
-#         self.__email = email
+    def set_email(self, email):
+        self.__email = email
