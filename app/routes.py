@@ -3,10 +3,11 @@ from flask_login import LoginManager,login_required,logout_user,current_user,log
 from sqlalchemy import or_
 from app.Forms import *
 from app.models import User
-from app.database import db,db2
+from app.database import db
 from flask_mail import Mail,Message
 from pyotp import TOTP
 from io import BytesIO
+from flask_rbac import RBAC
 import hashlib,uuid,random,pyotp,pyqrcode,base64
 
 app = Flask(__name__)
@@ -17,6 +18,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test1.db"
 db.init_app(app)
+rbac = RBAC(app)#rbac
 
 #Email Configuration
 app.config['MAIL_SERVER'] = 'smtp-mail.outlook.com'
@@ -77,6 +79,7 @@ def login():
                     session['user_id'] = user.id
                     session['user_role'] = user.role
                     login_user(user)
+                    #rbac.set_user_role(user.role)# Set the current user role based on the role attribute in the database
                     return redirect(url_for("index"))
             elif user.account_status == 'not_verified':
                 flash("Your account is not verified,Contact support for help.")
@@ -167,6 +170,7 @@ def verify2fa():
             session['user_id'] = user.id
             session['user_role'] = user.role
             session['email'] = user.email
+            rbac.set_user_role(user.role)# Set the current user role based on the role attribute in the database
             login_user(user)
             return redirect(url_for('index'))
         else:
