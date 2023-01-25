@@ -1,4 +1,4 @@
-from flask import Flask,request,flash,render_template,make_response,redirect,url_for,session
+from flask import Flask,request,flash,render_template,make_response,redirect,url_for,session,jsonify
 from flask_login import LoginManager,login_required,logout_user,current_user,login_user
 from sqlalchemy import or_
 from app.Forms import *
@@ -11,13 +11,12 @@ import hashlib,uuid,random,pyotp,pyqrcode,base64
 
 app = Flask(__name__)
 app.secret_key = 'NahidaKawaii'
+totp_secret = "JBSWY3DPEHPK3PXP"#pyotp.random_base32()
 app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # session timeout is 1 hour(3600Sec)
 login_manager = LoginManager()
 login_manager.init_app(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test1.db"
 db.init_app(app)
-# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///Orders.db"
-# db2.init_app(app)
 
 #Email Configuration
 app.config['MAIL_SERVER'] = 'smtp-mail.outlook.com'
@@ -30,7 +29,6 @@ mail = Mail(app)
 
 with app.app_context():
     db.create_all()
-    # db2.create_all()
     users = User.query.all()
     print(users)
     if User.query.filter_by(username="admin").first() or User.query.filter_by(username="kurokami").first():
@@ -69,13 +67,17 @@ def login():
         user = User.query.filter_by(username=username).first() or User.query.filter_by(email=email).first()
         # user,useremail = User.query.filter_by(username=username).first(),User.query.filter_by(email=email).first()
         # user = User.query.filter(or_(username==username,email==email)).first()
-        print(user)
+        # print(user)
+        session["email"] = email
         if user is not None and user.check_password(password):
             if user.account_status == 'enabled':
-                session['user_id'] = user.id
-                session['user_role'] = user.role
-                login_user(user)
-                return redirect(url_for("index"))
+                if user.multifactorauth == "enabled":
+                    return redirect(url_for("verify2fa"))
+                else:
+                    session['user_id'] = user.id
+                    session['user_role'] = user.role
+                    login_user(user)
+                    return redirect(url_for("index"))
             elif user.account_status == 'not_verified':
                 flash("Your account is not verified,Contact support for help.")
                 return redirect(url_for("login"))
@@ -102,7 +104,7 @@ def register():
     create_user_form = CreateUserForm(request.form)
     if current_user.is_authenticated:
         return redirect(url_for('index'))
-    if request.method == 'POST' :
+    if request.method == 'POST' and create_user_form.validate():
             username = request.form['username']
             password = request.form['password']
             first_name = request.form['first_name']
@@ -133,7 +135,7 @@ def register():
                             sender="testyamifood@outlook.com",
                             recipients=[email])
                 msg.body = "Welcome {}!\nThanks for signing up, you’re almost done creating your account!.\nYour verification code is: {}.\nPlease complete the account verification process in 30 minutes.".format(username,verification_code)
-                #mail.send(msg)
+                mail.send(msg)
                 #flash('Congratulations, you are now a registered user!')
                 return redirect(url_for('verify'))
     return render_template('register.html', form=create_user_form)
@@ -153,6 +155,23 @@ def verify():
             flash('Invalid verification code.')
     return render_template('validate.html')
 
+@app.route('/verify2fa', methods=['GET', 'POST'])
+def verify2fa():
+    if request.method == 'POST':
+        entered_code = request.form['code']
+        totp=TOTP(totp_secret)
+        print(f"entered_code {entered_code} totp {totp}")
+        if totp.verify(entered_code):
+            email = session.get('email')
+            user = User.query.filter_by(email=email).first()
+            session['user_id'] = user.id
+            session['user_role'] = user.role
+            session['email'] = user.email
+            login_user(user)
+            return redirect(url_for('index'))
+        else:
+            flash('Invalid verification code.')
+    return render_template('validate2fa.html')
 # @app.route('/register', methods=['GET', 'POST'])
 # def register():
 #     create_user_form = CreateUserForm(request.form)
@@ -339,45 +358,74 @@ def delete_account():
         resp = make_response(redirect(url_for('profile')))
         return resp
     
+# @app.route('/submit_password', methods=['POST'])
+# def submit_password():
+#     user_id = session.get('user_id')
+#     password = request.form.get('password')
+#     user = User.query.filter_by(id=user_id).first()
+#     Useruuid = str(uuid.uuid4())[:8].encode('utf-8')
+#     salt = bytes(hashlib.sha256(Useruuid).hexdigest(), "utf-8")
+#     salt = user.account_salt
+#     # print(salt,"password salt")
+#     hashed_password = hashlib.pbkdf2_hmac(
+#         "sha256",  # The hashing algorithm to use
+#         password.encode(),  # The password to hash, as bytes
+#         salt,  # The salt to use, as bytes
+#         100000  # The number of iterations to use
+#     )
+#     # print(f"hashed_password{hashed_password.hex()} user.password:{user.password_hash}")
+#     if user.password_hash != hashed_password.hex():
+#     #if entered_password != user_password:
+#         flash('Incorrect password')
+#         return redirect(url_for('profile'))
+#     email = 'example@example.com'
+#     app_name = "HoHoHotels"
+#     secret = pyotp.random_base32()
+#     totp = pyotp.TOTP(secret, interval=30)
+#     qr = pyqrcode.create(totp.provisioning_uri(email,issuer_name=app_name))
+#     buffer = BytesIO()
+#     qr.svg(buffer)
+#     qr_svg_str = buffer.getvalue()
+#     qr_svg_b64 = base64.b64encode(qr_svg_str).decode()
+#     return render_template('code.html', qr_svg_b64=qr_svg_b64)
+
 @app.route('/submit_password', methods=['POST'])
 def submit_password():
-    entered_password = request.form['password']
     user_id = session.get('user_id')
+    password = request.form.get('password')
     user = User.query.filter_by(id=user_id).first()
     Useruuid = str(uuid.uuid4())[:8].encode('utf-8')
     salt = bytes(hashlib.sha256(Useruuid).hexdigest(), "utf-8")
     salt = user.account_salt
-    # print(salt,"password salt")
     hashed_password = hashlib.pbkdf2_hmac(
         "sha256",  # The hashing algorithm to use
-        entered_password.encode(),  # The password to hash, as bytes
+        password.encode(),  # The password to hash, as bytes
         salt,  # The salt to use, as bytes
         100000  # The number of iterations to use
     )
-    user_password = user.password_hash()  # Retrieve user's password from the database
     if user.password_hash != hashed_password.hex():
-    #if entered_password != user_password:
-        flash('Incorrect password')
-        return redirect(url_for('profile'))
-    email = 'example@example.com'
+        return jsonify(password_correct=False)
+    email = session.get('email')
     app_name = "HoHoHotels"
-    secret = pyotp.random_base32()
-    totp = pyotp.TOTP(secret, interval=30)
+    totp = pyotp.TOTP(totp_secret, interval=30)
     qr = pyqrcode.create(totp.provisioning_uri(email,issuer_name=app_name))
+    print(qr)
     buffer = BytesIO()
     qr.svg(buffer)
     qr_svg_str = buffer.getvalue()
     qr_svg_b64 = base64.b64encode(qr_svg_str).decode()
-    return render_template('profile.html', qr_svg_b64=qr_svg_b64)
+    user.multifactorauth = 'enabled'
+    db.session.commit()
+    return render_template('code.html', qr_svg_b64=qr_svg_b64)
+    # return jsonify(password_correct=True)
 
 
 #TOTP Code Testing
 @app.route('/code')
 def generate_qr_code():
-    email = 'example@example.com'
+    email = session.get('email')
     app_name = "HoHoHotels"
-    secret = pyotp.random_base32()
-    totp = pyotp.TOTP(secret, interval=30)
+    totp = pyotp.TOTP(totp_secret, interval=30)
     qr = pyqrcode.create(totp.provisioning_uri(email,issuer_name=app_name))
     buffer = BytesIO()
     qr.svg(buffer)
