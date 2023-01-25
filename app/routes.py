@@ -18,7 +18,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test1.db"
 db.init_app(app)
-rbac = RBAC(app)#rbac
+# rbac = RBAC(app)#rbac
 
 #Email Configuration
 app.config['MAIL_SERVER'] = 'smtp-mail.outlook.com'
