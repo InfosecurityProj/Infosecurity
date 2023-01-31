@@ -153,14 +153,14 @@ class User(UserMixin,db.Model):
 class Order(UserMixin,db.Model):
     count_id = 0
     __tablename__ = 'orders'
-    id = db.Column(db.Integer, primary_key=True)
-    order_item = db.Column(db.String(50))
+    id = db.Column(db.Integer, primary_key=True, nullable=False)
+    order_item = db.Column(db.String(100))
     meat = db.Column(db.String(50))
     sauce = db.Column(db.String(50))
     remarks = db.Column(db.String(50))
     price = db.Column(db.Float)
     email = db.Column(db.String(50))
-    user_id = db.Column(db.Integer, primary_key=True)
+    # user_id = db.Column(db.Integer, primary_key=True)
     # user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=True)
     
     def __init__(self, order_item, meat, sauce, remarks, price, email):

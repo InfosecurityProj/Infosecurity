@@ -19,7 +19,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test1.db"
 db.init_app(app)
-# rbac = RBAC(app)#rbac
 
 #Email Configuration
 app.config['MAIL_SERVER'] = 'smtp-mail.outlook.com'
@@ -29,7 +28,7 @@ app.config['MAIL_PASSWORD'] = 'TestYami123'
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 mail = Mail(app)
-what
+
 def check_role(roles):
     def decorator(f):
         @wraps(f)
@@ -41,21 +40,6 @@ def check_role(roles):
         return decorated_function
     return decorator
 
-
-# def check_role(role):
-#     def decorator(f):
-#         @wraps(f)
-#         def decorated_function(*args, **kwargs):
-#             if current_user.is_authenticated:
-#                 if current_user.role != role:
-#                     return redirect(url_for('unauthorized'))
-#             # user = current_user()
-#             # if user.role != role:
-#             #     return redirect(url_for('unauthorized'))
-#             return f(*args, **kwargs)
-#         return decorated_function
-#     return decorator
-
 with app.app_context():
     db.create_all()
     users = User.query.all()
@@ -65,14 +49,15 @@ with app.app_context():
         # print("admin exist")
         pass
     else:
+        pass
         # The "admin" username does not exist, so create a new user
-        admin=User(username="admin",email="admin@gmail.com",password_hash="7a14def6c43d661e14c59a3dd7174f617137b338ea128d428868e677dc3bed00",role="Administrator",
-                        title="Mister",first_name="admin",last_name=" ",gender="M",account_salt="7f7ae7b152053e0e99d2db2cdb8caea759c473353322c8de03798357c0810b88",account_status="enabled",multifactorauth="disabled")
-        kurokami=User(username="kurokami",email="kuro@gmail.com",password_hash="93c8033745689de41d5966ef63f56cf0d608658c284509eefd75de2335459c7f",role="Administrator",
-                        title="Mister",first_name="kurokami",last_name="desu",gender="M",account_salt="845a111eb9585de318efd85a4810099eeb82903cc3b89c8b9ccfd6a5288dcea8",account_status="enabled",multifactorauth="disabled")
-        db.session.add(admin)
-        db.session.add(kurokami)
-        db.session.commit()
+        # admin=User(username="admin",email="admin@gmail.com",password_hash="7a14def6c43d661e14c59a3dd7174f617137b338ea128d428868e677dc3bed00",role="Administrator",
+        #                 title="Mister",first_name="admin",last_name=" ",gender="M",account_salt="7f7ae7b152053e0e99d2db2cdb8caea759c473353322c8de03798357c0810b88",account_status="enabled",multifactorauth="disabled")
+        # kurokami=User(username="kurokami",email="kuro@gmail.com",password_hash="93c8033745689de41d5966ef63f56cf0d608658c284509eefd75de2335459c7f",role="Administrator",
+        #                 title="Mister",first_name="kurokami",last_name="desu",gender="M",account_salt="845a111eb9585de318efd85a4810099eeb82903cc3b89c8b9ccfd6a5288dcea8",account_status="enabled",multifactorauth="disabled")
+        # db.session.add(admin)
+        # db.session.add(kurokami)
+        # db.session.commit()
         
 @login_manager.user_loader
 def load_user(user_id):
@@ -106,7 +91,6 @@ def login():
                     session['user_id'] = user.id
                     session['user_role'] = user.role
                     login_user(user)
-                    #rbac.set_user_role(user.role)# Set the current user role based on the role attribute in the database
                     return redirect(url_for("index"))
             elif user.account_status == 'not_verified':
                 flash("Your account is not verified,Contact support for help.")
@@ -197,12 +181,12 @@ def verify2fa():
             session['user_id'] = user.id
             session['user_role'] = user.role
             session['email'] = user.email
-            # rbac.set_user_role(user.role)# Set the current user role based on the role attribute in the database
             login_user(user)
             return redirect(url_for('index'))
         else:
             flash('Invalid verification code.')
     return render_template('validate2fa.html')
+
 # @app.route('/register', methods=['GET', 'POST'])
 # def register():
 #     create_user_form = CreateUserForm(request.form)
@@ -453,24 +437,110 @@ def submit_password():
     # return jsonify(password_correct=True)
 
 #Create Order
-# @app.route('/createOrder', methods=['GET', 'POST'])
-# def create_order():
-#     create_order_form = CreateOrderForm(request.form)
-#     if request.method == 'POST' and create_order_form.validate():
+@app.route('/menu', methods=['GET', 'POST'])
+def menu():
+    if request.method == "POST":
+        if request.form['menu'] == 'Tea':
+            order_item = 'Tea'
+            order_price = 5.79
+        elif request.form['menu'] == 'Fruit Juice':
+            order_item = 'Fruit Juice'
+            order_price = 8.79
+        elif request.form['menu'] == 'Soft Drink':
+            order_item = 'Soft Drink'
+            order_price = 7.79
+        elif request.form['menu'] == 'Burger':
+            order_item = 'Burger'
+            order_price = 15.79
+        elif request.form['menu'] == 'Salad':
+            order_item = 'Salad'
+            order_price = 18.79
+        elif request.form['menu'] == 'Pasta':
+            order_item = 'Pasta'
+            order_price = 20.79
+        elif request.form['menu'] == 'Steak':
+            order_item = 'Steak'
+            order_price = 25.79
+        elif request.form['menu'] == 'Korean Rice':
+            order_item = 'Korean Rice'
+            order_price = 22.79
+        elif request.form['menu'] == 'Hotplate':
+            order_item = 'Hotplate'
+            order_price = 24.79
+        return redirect(url_for('create_order', order_item=order_item, order_price=order_price))
+    else:
+        return render_template("menu.html")
+    
+@app.route('/createOrder/<order_item>/<float:order_price>', methods=['GET', 'POST'])
+def create_order(order_item, order_price):
+    create_order_form = CreateOrderForm(request.form)
+    if request.method == 'POST' and create_order_form.validate():
+        order = Order(order_item, create_order_form.meat.data,
+                      create_order_form.sauce.data, create_order_form.remarks.data, order_price, session['email'])
+        db.session.add(order)
+        db.session.commit()
 
-#         order = Order(meat=create_order_form.meat.data,
-#                       sauce=create_order_form.sauce.data,
-#                       remarks=create_order_form.remarks.data,
-#                       price="699",
-#                       order_item="My Depression",
-#                       email="mydepression@gmail.com")
-#         db.session.add(order)
-#         db.session.commit()
-        
-#         response = make_response(redirect(url_for('retrieve_order')))
-#         return response
-#     resp = make_response(render_template('createOrder.html', form=create_order_form))
-#     return resp
+        response = make_response(redirect(url_for('retrieve_order')))
+        return response
+    resp = make_response(render_template('createOrder.html', form=create_order_form, order_item=order_item))
+    return resp
+
+# Retrieve
+@app.route('/retrieveOrder', methods=["GET", "POST"])
+def retrieve_order():
+    if not session.get('type'):
+        session['type'] = 'guest'
+    if session['type'] != 'guest':
+        order_list = Order.query.filter_by(email=session['email']).all()
+
+        total = 0
+        count = 0
+        for item in order_list:
+            total += item.price
+            count += 1
+
+        if request.method == "POST":
+            session['create_order'] = order.id
+
+        response = make_response(render_template('retrieveOrder.html', count=count, order_list=order_list, total=total))
+        return response
+    else:
+        resp = make_response(redirect(url_for('index')))
+        return resp
+
+# Update
+@app.route('/updateOrder/<int:id>/', methods=['GET', 'POST'])
+def update_order(id):
+    update_order_form = CreateOrderForm(request.form)
+    if request.method == 'POST' and update_order_form.validate():
+        order = Order.query.get(id)
+        order.meat = update_order_form.meat.data
+        order.sauce = update_order_form.sauce.data
+        order.remarks = update_order_form.remarks.data
+
+        db.session.commit()
+
+        response = make_response(redirect(url_for('retrieve_order')))
+        return response
+    else:
+        order = Order.query.get(id)
+        update_order_form.meat.data = order.meat
+        update_order_form.sauce.data = order.sauce
+        update_order_form.remarks.data = order.remarks
+        order_item = order.order_item
+
+        resp = make_response(render_template('updateOrder.html', form=update_order_form, order_item=order_item))
+        return resp
+
+# Delete
+@app.route('/deleteOrder/<int:id>', methods=['POST'])
+def deleteOrder(id):
+    order = Order.query.get(id)
+    db.session.delete(order)
+    db.session.commit()
+
+    resp = make_response(redirect(url_for('retrieve_order')))
+    return resp
 
 #TOTP Code Testing
 @app.route('/code')
@@ -485,11 +555,6 @@ def generate_qr_code():
     qr_svg_str = buffer.getvalue()
     qr_svg_b64 = base64.b64encode(qr_svg_str).decode()
     return render_template('code.html', qr_svg_b64=qr_svg_b64)
-
-@app.route('/admin')
-@check_role('Administrator')
-def admin():
-    return render_template('index.html')
 
 @app.route('/unauthorized')
 def unauthorized():
