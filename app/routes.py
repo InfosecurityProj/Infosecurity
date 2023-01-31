@@ -29,7 +29,7 @@ app.config['MAIL_PASSWORD'] = 'TestYami123'
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 mail = Mail(app)
-
+what
 def check_role(roles):
     def decorator(f):
         @wraps(f)
