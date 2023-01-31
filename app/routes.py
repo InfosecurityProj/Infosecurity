@@ -2,12 +2,13 @@ from flask import Flask,request,flash,render_template,make_response,redirect,url
 from flask_login import LoginManager,login_required,logout_user,current_user,login_user
 from sqlalchemy import or_
 from app.Forms import *
-from app.models import User
+from app.models import User,Order
 from app.database import db
 from flask_mail import Mail,Message
 from pyotp import TOTP
+from functools import wraps
 from io import BytesIO
-from flask_rbac import RBAC
+
 import hashlib,uuid,random,pyotp,pyqrcode,base64
 
 app = Flask(__name__)
@@ -28,6 +29,32 @@ app.config['MAIL_PASSWORD'] = 'TestYami123'
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 mail = Mail(app)
+
+def check_role(roles):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if current_user.is_authenticated:
+                if current_user.role not in roles:
+                    return redirect(url_for('unauthorized'))
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
+
+# def check_role(role):
+#     def decorator(f):
+#         @wraps(f)
+#         def decorated_function(*args, **kwargs):
+#             if current_user.is_authenticated:
+#                 if current_user.role != role:
+#                     return redirect(url_for('unauthorized'))
+#             # user = current_user()
+#             # if user.role != role:
+#             #     return redirect(url_for('unauthorized'))
+#             return f(*args, **kwargs)
+#         return decorated_function
+#     return decorator
 
 with app.app_context():
     db.create_all()
@@ -170,7 +197,7 @@ def verify2fa():
             session['user_id'] = user.id
             session['user_role'] = user.role
             session['email'] = user.email
-            rbac.set_user_role(user.role)# Set the current user role based on the role attribute in the database
+            # rbac.set_user_role(user.role)# Set the current user role based on the role attribute in the database
             login_user(user)
             return redirect(url_for('index'))
         else:
@@ -200,6 +227,7 @@ def verify2fa():
 #     return render_template('register.html', form=create_user_form)
 
 @app.route('/retrieving')
+@check_role('Administrator')
 @login_required
 def retrieving_users():
     if not session.get('user_role'):
@@ -297,6 +325,7 @@ def delete_user(id):
     
 # profile
 @app.route("/profile")
+@check_role(['Administrator','User','Guest'])
 def profile():
     #print(session) debugging session
     if not session.get('user_role'):
@@ -423,9 +452,29 @@ def submit_password():
     return render_template('code.html', qr_svg_b64=qr_svg_b64)
     # return jsonify(password_correct=True)
 
+#Create Order
+# @app.route('/createOrder', methods=['GET', 'POST'])
+# def create_order():
+#     create_order_form = CreateOrderForm(request.form)
+#     if request.method == 'POST' and create_order_form.validate():
+
+#         order = Order(meat=create_order_form.meat.data,
+#                       sauce=create_order_form.sauce.data,
+#                       remarks=create_order_form.remarks.data,
+#                       price="699",
+#                       order_item="My Depression",
+#                       email="mydepression@gmail.com")
+#         db.session.add(order)
+#         db.session.commit()
+        
+#         response = make_response(redirect(url_for('retrieve_order')))
+#         return response
+#     resp = make_response(render_template('createOrder.html', form=create_order_form))
+#     return resp
 
 #TOTP Code Testing
 @app.route('/code')
+@check_role(['Administrator','User'])
 def generate_qr_code():
     email = session.get('email')
     app_name = "HoHoHotels"
@@ -436,6 +485,16 @@ def generate_qr_code():
     qr_svg_str = buffer.getvalue()
     qr_svg_b64 = base64.b64encode(qr_svg_str).decode()
     return render_template('code.html', qr_svg_b64=qr_svg_b64)
+
+@app.route('/admin')
+@check_role('Administrator')
+def admin():
+    return render_template('index.html')
+
+@app.route('/unauthorized')
+def unauthorized():
+    return render_template('unauthorized.html')
+
 
 # @app.errorhandler(401)#webpage for 401
 # def unauthorized(error):

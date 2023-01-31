@@ -1,6 +1,6 @@
 from flask_login import UserMixin
 from flask import Flask
-from app.database import db,db2
+from app.database import db,db
 import hashlib, uuid, re
 
 app = Flask(__name__)
@@ -146,67 +146,71 @@ class User(UserMixin,db.Model):
     
     def get_multifactorauth(self):
         return self.multifactorauth
+    
+    def has_role(self, role):
+        return self.role == role
 
 class Order(UserMixin,db.Model):
     count_id = 0
     __tablename__ = 'orders'
-    id = db2.Column(db2.Integer, primary_key=True)
-    order_item = db2.Column(db2.String(50))
-    meat = db2.Column(db2.String(50))
-    sauce = db2.Column(db2.String(50))
-    remarks = db2.Column(db2.String(50))
-    price = db2.Column(db2.Float)
-    email = db2.Column(db2.String(50))
-    user_id = db2.Column(db2.Integer, db2.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    order_item = db.Column(db.String(50))
+    meat = db.Column(db.String(50))
+    sauce = db.Column(db.String(50))
+    remarks = db.Column(db.String(50))
+    price = db.Column(db.Float)
+    email = db.Column(db.String(50))
+    user_id = db.Column(db.Integer, primary_key=True)
+    # user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=True)
     
     def __init__(self, order_item, meat, sauce, remarks, price, email):
         Order.count_id += 1
-        self.__order_id = Order.count_id
-        self.__order_item = order_item
-        self.__meat = meat
-        self.__sauce = sauce
-        self.__remarks = remarks
-        self.__price = price
-        self.__email = email
+        self.order_id = Order.count_id
+        self.order_item = order_item
+        self.meat = meat
+        self.sauce = sauce
+        self.remarks = remarks
+        self.price = price
+        self.email = email
 
     def get_order_id(self):
-        return self.__order_id
+        return self.order_id
 
     def get_order_item(self):
-        return self.__order_item
+        return self.order_item
 
     def get_meat(self):
-        return self.__meat
+        return self.meat
 
     def get_sauce(self):
-        return self.__sauce
+        return self.sauce
 
     def get_remarks(self):
-        return self.__remarks
+        return self.remarks
 
     def get_price(self):
-        return self.__price
+        return self.price
 
     def get_email(self):
-        return self.__email
+        return self.email
 
     def set_order_id(self, order_id):
-        self.__order_id = order_id
+        self.order_id = order_id
 
     def set_order_item(self, order_item):
-        self.__order_item = order_item
+        self.order_item = order_item
 
     def set_meat(self, meat):
-        self.__meat = meat
+        self.meat = meat
 
     def set_sauce(self, sauce):
-        self.__sauce = sauce
+        self.sauce = sauce
 
     def set_remarks(self, remarks):
-        self.__remarks = remarks
+        self.remarks = remarks
 
     def set_price(self, price):
-        self.__price = price
+        self.price = price
 
     def set_email(self, email):
-        self.__email = email
+        self.email = email
