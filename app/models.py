@@ -159,11 +159,11 @@ class Order(UserMixin,db.Model):
     sauce = db.Column(db.String(50))
     remarks = db.Column(db.String(50))
     price = db.Column(db.Float)
-    email = db.Column(db.String(50))
+    user_id = db.Column(db.Integer)
     # user_id = db.Column(db.Integer, primary_key=True)
     # user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=True)
     
-    def __init__(self, order_item, meat, sauce, remarks, price, email):
+    def __init__(self, order_item, meat, sauce, remarks, price, user_id):
         Order.count_id += 1
         self.order_id = Order.count_id
         self.order_item = order_item
@@ -171,10 +171,10 @@ class Order(UserMixin,db.Model):
         self.sauce = sauce
         self.remarks = remarks
         self.price = price
-        self.email = email
+        self.user_id = user_id
 
     def get_order_id(self):
-        return self.order_id
+        return self.id
 
     def get_order_item(self):
         return self.order_item
@@ -191,8 +191,8 @@ class Order(UserMixin,db.Model):
     def get_price(self):
         return self.price
 
-    def get_email(self):
-        return self.email
+    def get_user_id(self):
+        return self.user_id
 
     def set_order_id(self, order_id):
         self.order_id = order_id
@@ -212,5 +212,68 @@ class Order(UserMixin,db.Model):
     def set_price(self, price):
         self.price = price
 
+    def set_user_id(self, user_id):
+        self.user_id = user_id
+
+class Reservation(UserMixin,db.Model):
+    count_id = 0
+    __tablename__ = 'reservation'
+    id = db.Column(db.Integer, primary_key=True, nullable=False)
+    name = db.Column(db.String(100))
+    email = db.Column(db.String(100))
+    number = db.Column(db.String(50))
+    date = db.Column(db.String(50))
+    time = db.Column(db.String(50))
+    party_size = db.Column(db.String(50))
+    
+    def __init__(self, name, email, number, date, time, party_size):
+        Reservation.count_id += 1
+        self.resveration_id = Reservation.count_id
+        self.name = name
+        self.email = email
+        self.number = number
+        self.date = date
+        self.time = time
+        self.party_size = party_size
+
+    def get_resveration_id(self):
+        return self.resveration_id
+
+    def get_name(self):
+        return self.name
+
+    def get_email(self):
+        return self.email
+
+    def get_number(self):
+        return self.number
+
+    def get_date(self):
+        return self.date
+
+    def get_time(self):
+        return self.time
+
+    def get_party_size(self):
+        return self.party_size
+
+    def set_resveration_id(self, resveration_id):
+        self.resveration_id = resveration_id
+
+    def set_name(self, name):
+        self.name = name
+
     def set_email(self, email):
         self.email = email
+
+    def set_number(self, number):
+        self.number = number
+
+    def set_date(self, date):
+        self.date = date
+
+    def set_time(self, time):
+        self.time = time
+
+    def set_party_size(self, party_size):
+        self.party_size = party_size

@@ -1,15 +1,14 @@
-from flask import Flask,request,flash,render_template,make_response,redirect,url_for,session,jsonify
+from flask import Flask,request,flash,render_template,make_response,redirect,url_for,session,jsonify,Markup
 from flask_login import LoginManager,login_required,logout_user,current_user,login_user
 from sqlalchemy import or_
 from app.Forms import *
-from app.models import User,Order
+from app.models import User,Order,Reservation
 from app.database import db
 from flask_mail import Mail,Message
 from pyotp import TOTP
 from functools import wraps
 from io import BytesIO
-
-import hashlib,uuid,random,pyotp,pyqrcode,base64
+import hashlib,uuid,random,pyotp,pyqrcode,base64,re
 
 app = Flask(__name__)
 app.secret_key = 'NahidaKawaii'
@@ -343,6 +342,7 @@ def logout():
     return redirect(url_for("login"))
 
 @app.route('/delete_account', methods=['POST'])
+@login_required
 def delete_account():
     # Get the user's password from the form
     user_id = session.get('user_id')
@@ -471,45 +471,48 @@ def menu():
     else:
         return render_template("menu.html")
     
-@app.route('/createOrder/<order_item>/<float:order_price>', methods=['GET', 'POST'])
+@app.route('/createorder/<order_item>/<float:order_price>', methods=['GET', 'POST'])
 def create_order(order_item, order_price):
     create_order_form = CreateOrderForm(request.form)
     if request.method == 'POST' and create_order_form.validate():
         order = Order(order_item, create_order_form.meat.data,
-                      create_order_form.sauce.data, create_order_form.remarks.data, order_price, session['email'])
+                      create_order_form.sauce.data, create_order_form.remarks.data, order_price, session['user_id'])
         db.session.add(order)
         db.session.commit()
 
         response = make_response(redirect(url_for('retrieve_order')))
         return response
-    resp = make_response(render_template('createOrder.html', form=create_order_form, order_item=order_item))
+    resp = make_response(render_template('createorder.html', form=create_order_form, order_item=order_item))
     return resp
 
 # Retrieve
-@app.route('/retrieveOrder', methods=["GET", "POST"])
+@app.route('/retrieveorder', methods=["GET", "POST"])
+@check_role(['Administrator','User'])
 def retrieve_order():
-    if not session.get('type'):
-        session['type'] = 'guest'
-    if session['type'] != 'guest':
-        order_list = Order.query.filter_by(email=session['email']).all()
-
+    # if not session.get('type'):
+    #     session['user_role'] = 'Guest'
+    if session['user_role'] != 'Guest':
+        order_list = Order.query.filter_by(user_id=session['user_id']).all()
+        print(session['user_id'])
         total = 0
         count = 0
         for item in order_list:
             total += item.price
             count += 1
-
+        total=round(total,2)
         if request.method == "POST":
-            session['create_order'] = order.id
+            session['create_order'] = order_list.id
 
-        response = make_response(render_template('retrieveOrder.html', count=count, order_list=order_list, total=total))
+        response = make_response(render_template('retrieveorder.html', count=count, order=order_list, total=total))
         return response
     else:
-        resp = make_response(redirect(url_for('index')))
+        resp = make_response(redirect(url_for('login')))
+        flash("Please login to continue.")
         return resp
 
 # Update
 @app.route('/updateOrder/<int:id>/', methods=['GET', 'POST'])
+@login_required
 def update_order(id):
     update_order_form = CreateOrderForm(request.form)
     if request.method == 'POST' and update_order_form.validate():
@@ -534,6 +537,8 @@ def update_order(id):
 
 # Delete
 @app.route('/deleteOrder/<int:id>', methods=['POST'])
+@login_required
+@check_role(['Administrator','User'])
 def deleteOrder(id):
     order = Order.query.get(id)
     db.session.delete(order)
@@ -556,10 +561,186 @@ def generate_qr_code():
     qr_svg_b64 = base64.b64encode(qr_svg_str).decode()
     return render_template('code.html', qr_svg_b64=qr_svg_b64)
 
+def check_special(string):
+    regex = re.compile('[@_!#$%^&*()<>?/|}{~:]')
+    if (regex.search(string) == None):
+        return True
+    else:
+        return False
+    
+#Reservation
+@app.route('/createReserve', methods=["GET", "POST"])
+def createReserve():
+    create_reserve_form = CreateReserveForm(request.form)
+    error = ''
+    if request.method == 'POST' and create_reserve_form.validate():
+        if check_special(create_reserve_form.name.data) == True:
+
+            reserve_name = Markup.escape(create_reserve_form.name.data)
+            reserve_number = Markup.escape(create_reserve_form.number.data)
+            reserve_email = Markup.escape(create_reserve_form.email.data)
+
+            reservation = Reservation(name=reserve_name, email=reserve_email,
+                                    number=reserve_number, date=create_reserve_form.date.data,
+                                    time=create_reserve_form.time.data, party_size=create_reserve_form.party_size.data)
+            db.session.add(reservation)
+            db.session.commit()
+            
+            session['create_reserve'] = reservation.id
+        else:
+            error = "No special characters allowed for name"
+
+    resp = render_template('createReserve.html', form=create_reserve_form, error=error)
+    return resp
+
+@app.route('/staffReserve')
+def staffReserve():
+    if session['user_role'] == 'User' or session['user_role'] == 'Administrator':
+        dec_key = get_fixed_key()
+        f = Fernet(dec_key)
+        reserve_list = []
+        name_list = []
+        number_list = []
+        email_list = []
+        for b in range(0, 30):
+            name_list.append(' ')
+            number_list.append(' ')
+            email_list.append(' ')
+
+        for reserve in Reservation.query.all():
+            reserve_list.append(reserve)
+            reserve_name = f.decrypt(reserve.name.encode('utf-8')).decode('utf8')
+            reserve_number = f.decrypt(reserve.number.encode('utf-8')).decode('utf8')
+            reserve_email = f.decrypt(reserve.email.encode('utf-8')).decode('utf8')
+            name_list[reserve.user_id] = reserve_name
+            number_list[reserve.user_id] = reserve_number
+            email_list[reserve.user_id] = reserve_email
+
+        if session['type'] == 'staff':
+            response = make_response(
+                render_template('staffReserve.html', count=len(reserve_list), reserve_list=reserve_list,
+                                name_list=name_list, number_list=number_list, email_list=email_list))
+            return response
+        else:
+            resp = make_response(redirect(url_for('index')))
+            return resp
+    else:
+        flash("You have been logged out due to 30 minutes of inactivity. Please re-login again.")
+        resp = make_response(redirect(url_for('login')))
+        return resp
+
+@app.route('/userReserve', methods=["GET", "POST"])
+def userReserve():
+    if not session.get('type'):
+        session['type'] = 'guest'
+    if session['type'] == 'user' or session['type'] == 'staff':
+        dec_key = get_fixed_key()
+        reserve_list = []
+        name_list = []
+        number_list = []
+        email_list = []
+
+        searchReserve = ''
+        error = ''
+        if request.method == "POST":
+            searchReserve = request.form['searchReserve']
+            if check_special(searchReserve) == True:
+                searchReserve = Markup.escape(searchReserve)  # to prevent xss
+            else:
+                searchReserve = ''
+                error = "No special characters allowed"
+        for b in range(0, 30):
+            name_list.append(' ')
+            number_list.append(' ')
+            email_list.append(' ')
+
+        # Fetch data from the database
+        reserve_records = db.session.query(Reservation).all()
+        for reserve in reserve_records:
+            reserve_list.append(reserve)
+
+            reserve_name = decrypt(dec_key, reserve.name).decode('utf8')
+            reserve_number = decrypt(dec_key, reserve.number).decode('utf8')
+            reserve_email = decrypt(dec_key, reserve.email).decode('utf8')
+
+            name_list[reserve.user_id] = reserve_name
+            number_list[reserve.user_id] = reserve_number
+            email_list[reserve.user_id] = reserve_email
+            reserve_user_list = []
+
+        for reserve in reserve_list:
+            if decrypt(dec_key, reserve.email).decode('utf8') == session['email']:
+                if searchReserve:
+                    if searchReserve.lower() in reserve.date.lower():
+                        reserve_user_list.append(reserve)
+                else:
+                    reserve_user_list.append(reserve)
+        resp = make_response(
+            render_template('userReserve.html', count=len(reserve_list), reserve_user_list=reserve_user_list,
+                            name_list=name_list, number_list=number_list, email_list=email_list,
+                            searchReserve=searchReserve, error=error))
+        return resp
+    else:
+        flash("You have been logged out due to 30 minutes of inactivity. Please re-login again.")
+        resp = make_response(redirect(url_for('login')))
+        return resp
+
+@app.route('/updateReserve/int:id/', methods=['GET', 'POST'])
+def updateReserve(id):
+    update_reserve_form = CreateReserveForm(request.form)
+    if request.method == 'POST' and update_reserve_form.validate():
+        if check_special(update_reserve_form.name.data) == True:
+            reserve_name = Markup(update_reserve_form.name.data)
+            reserve_name = Markup.escape(reserve_name)  # to prevent xss
+            reserve_name = encrypt(key, reserve_name.encode('utf8'))
+
+            reserve_number = Markup.escape(update_reserve_form.number.data)  # to prevent xss
+            reserve_number = encrypt(key, reserve_number.encode('utf8'))
+
+            reserve_email = Markup.escape(update_reserve_form.email.data)  # to prevent xss
+            reserve_email = encrypt(key, reserve_email.encode('utf8'))
+
+            reserve = Reservation.query.filter_by(id=id).first()
+            reserve.name = reserve_name
+            reserve.email = reserve_email
+            reserve.number = reserve_number
+            reserve.date = update_reserve_form.date.data
+            reserve.time = update_reserve_form.time.data
+            reserve.party_size = update_reserve_form.party_size.data
+
+            db.session.commit()
+
+            if session['type'] == "staff":
+                response = make_response(redirect(url_for('staffReserve')))
+                return response
+            elif session['type'] == "user":
+                resp = make_response(redirect(url_for('userReserve')))
+                return resp
+        else:
+            error = "No special characters allowed for name"
+            resp = make_response(render_template('updateReserve.html', form=update_reserve_form, error=error))
+            return resp
+    else:
+        dec_key = get_fixed_key()
+
+        reserve = Reservation.query.filter_by(id=id).first()
+        reserve_name = decrypt(dec_key, reserve.name).decode('utf8')
+        reserve_number = decrypt(dec_key, reserve.number).decode('utf8')
+        reserve_email = decrypt(dec_key, reserve.email).decode('utf8')
+
+        update_reserve_form.name.data = reserve_name
+        update_reserve_form.email.data = reserve_email
+        update_reserve_form.number.data = reserve_number
+        update_reserve_form.date.data = reserve.date
+        update_reserve_form.time.data = reserve.time
+        update_reserve_form.party_size.data = reserve.party_size
+
+        resp = make_response(render_template('updateReserve.html', form=update_reserve_form))
+        return resp
+
 @app.route('/unauthorized')
 def unauthorized():
     return render_template('unauthorized.html')
-
 
 # @app.errorhandler(401)#webpage for 401
 # def unauthorized(error):

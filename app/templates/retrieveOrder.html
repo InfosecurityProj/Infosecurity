@@ -62,11 +62,10 @@
       </tr>
     </thead>
     <tbody>
-    {% for order in order_list %}
-	{% if order.get_email() == session['email'] %}
+	{% for order in order %}
+	{% if order.user_id == session['user_id'] %}
       <tr>
         <td>{{ order.get_order_id() }}</td>
-
         {% if order.get_meat() == 'C' %}
         <td>Chicken</td>
         {% elif order.get_meat() == 'M' %}
