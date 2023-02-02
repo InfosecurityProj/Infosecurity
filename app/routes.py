@@ -8,7 +8,9 @@ from flask_mail import Mail,Message
 from pyotp import TOTP
 from functools import wraps
 from io import BytesIO
+from app.chargecredit import charge
 import hashlib,uuid,random,pyotp,pyqrcode,base64,re
+
 
 app = Flask(__name__)
 app.secret_key = 'NahidaKawaii'
@@ -499,9 +501,16 @@ def retrieve_order():
         for item in order_list:
             total += item.price
             count += 1
-        total=round(total,2)
+        total=round(total,0)#card payment couldn't do decilmal??
         if request.method == "POST":
-            session['create_order'] = order_list.id
+            # Custom transaction data
+            card_number = "4111111111111111"
+            expiration_date = "2023-01"
+            amount = total
+            merchant_id = "devil-kitchen"
+
+            # Invoke the charge function to execute the transaction
+            charge(card_number, expiration_date, amount, merchant_id)
 
         response = make_response(render_template('retrieveorder.html', count=count, order=order_list, total=total))
         return response
