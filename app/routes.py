@@ -9,12 +9,13 @@ from pyotp import TOTP
 from functools import wraps
 from io import BytesIO
 from app.chargecredit import charge
-import hashlib,uuid,random,pyotp,pyqrcode,base64,re
+from dotenv import load_dotenv
+import hashlib,uuid,random,pyotp,pyqrcode,base64,re,os,stripe
 
-
+load_dotenv()
 app = Flask(__name__)
-app.secret_key = 'NahidaKawaii'
-totp_secret = "JBSWY3DPEHPK3PXP"#pyotp.random_base32()
+app.secret_key = os.getenv("app_secret")
+totp_secret = os.getenv("totp_key")#pyotp.random_base32()
 app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # session timeout is 1 hour(3600Sec)
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -24,11 +25,14 @@ db.init_app(app)
 #Email Configuration
 app.config['MAIL_SERVER'] = 'smtp-mail.outlook.com'
 app.config['MAIL_PORT'] = 587
-app.config['MAIL_USERNAME'] = 'testyamifood@outlook.com'
-app.config['MAIL_PASSWORD'] = 'TestYami123'
+app.config['MAIL_USERNAME'] = os.getenv("email_username")
+app.config['MAIL_PASSWORD'] = os.getenv("email_password")
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 mail = Mail(app)
+
+#Payment
+stripe.api_key = os.getenv("stripe_api_key")
 
 def check_role(roles):
     def decorator(f):
@@ -147,7 +151,7 @@ def register():
                 verification_code = str(random.randint(1000, 9999))
                 # Send an email with the verification code
                 msg = Message("Verification Code",
-                            sender="testyamifood@outlook.com",
+                            sender= os.getenv("email_username"),
                             recipients=[email])
                 msg.body = "Welcome {}!\nThanks for signing up, you’re almost done creating your account!.\nYour verification code is: {}.\nPlease complete the account verification process in 30 minutes.".format(username,verification_code)
                 mail.send(msg)
@@ -495,29 +499,55 @@ def retrieve_order():
     #     session['user_role'] = 'Guest'
     if session['user_role'] != 'Guest':
         order_list = Order.query.filter_by(user_id=session['user_id']).all()
-        print(session['user_id'])
         total = 0
         count = 0
         for item in order_list:
             total += item.price
             count += 1
-        total=round(total,0)#card payment couldn't do decilmal??
+        total=round(total,0)
+        session['order_total'] = total
         if request.method == "POST":
-            # Custom transaction data
-            card_number = "4111111111111111"
-            expiration_date = "2023-01"
-            amount = total
-            merchant_id = "devil-kitchen"
-
-            # Invoke the charge function to execute the transaction
-            charge(card_number, expiration_date, amount, merchant_id)
-
+            # Create a Stripe checkout session
+            stripe_session = stripe.checkout.Session.create(
+                line_items=[
+                    {
+                        'price_data': {
+                            'product_data': {
+                                'name': "Food Order",
+                            },
+                            'unit_amount': int(total*100),
+                            'currency': 'sgd',
+                        },
+                        'quantity': 1,
+                    },
+                ],
+                payment_method_types=['card'],
+                mode='payment',
+                success_url=url_for('payment_success', _external=True),
+                cancel_url=url_for('payment_failure', _external=True)
+            )
+            return redirect(stripe_session.url)
         response = make_response(render_template('retrieveorder.html', count=count, order=order_list, total=total))
         return response
     else:
         resp = make_response(redirect(url_for('login')))
         flash("Please login to continue.")
         return resp
+    
+# Redirect to this endpoint after a successful payment
+@app.route("/success", methods=['GET', 'POST'])
+def payment_success():
+    total=session.get("order_total")
+    order_list = Order.query.filter_by(user_id=session['user_id']).all()
+    for order in order_list:
+        db.session.delete(order)
+    db.session.commit()
+    response = make_response(render_template('paymentsuccessful.html'))
+    return response
+
+@app.route("/failure")
+def payment_failure():
+    return "Payment Successful!"
 
 # Update
 @app.route('/updateOrder/<int:id>/', methods=['GET', 'POST'])

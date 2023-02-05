@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %} Devil's Kitchen - Menu {% endblock %}
+
+{% block content %}
+{% from "includes/_formHelper.html" import render_field %}
+
+<br>
+<br>
+<br>
+<style>
+    body {
+        text-align: center;
+        font-family: "Helvetica Neue", "Helvetica", Arial, Verdana, sans-serif;
+        background: #f2f2f2;
+        overflow: hidden;
+    }
+
+    .cf:before,
+    .cf:after {
+        content: " ";
+        /* 1 */
+        display: table;
+        /* 2 */
+    }
+
+    .cf:after {
+        clear: both;
+    }
+
+    /* For IE 6/7 only Include this rule to trigger hasLayout and contain floats. */
+    .cf {
+        *zoom: 1;
+    }
+
+    .crReciept {
+        border: solid 1px rgba(0, 0, 0, 0.15);
+        max-width: 400px;
+        margin: 0 auto;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background: #f2f2f2;
+        margin-bottom: 25px;
+    }
+
+    .crReciept h2 {
+        color: #2E8B57;
+    }
+
+    .crReciept h3 span {
+        color: #2E8B57;
+    }
+
+    .crTitle {
+        max-width: 400px;
+        margin: 0 auto;
+
+    }
+
+    .crTitle img {
+        /* float: left; */
+        width: 150px
+    }
+
+    .crItem {
+        margin: 0 20px;
+        border-top: solid 1px #ccc;
+        border-bottom: solid 1px #ccc;
+        display: block;
+        clear: both;
+    }
+
+    .crItem p:first-child {
+        float: left;
+        max-width: 70%;
+        text-align: left;
+    }
+
+    .crAmount {
+        font-size: 32px;
+        font-weight: bold;
+        line-height: 10px;
+        float: right;
+        margin: 22px 0;
+    }
+
+    .crAmount sup {
+        font-size: 18px;
+    }
+
+    .paymentInfo {
+        text-align: left;
+        padding-left: 25px;
+        padding-bottom: 10px;
+    }
+
+    .crReciept a {
+        text-decoration: none;
+        color: #000;
+        font-weight: bold;
+    }
+
+    .crReciept a:hover {
+        color: #FF0034;
+    }
+</style>
+<div class="reservation-box">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="crTitle">
+                    <h1>Payment Confirmation</h1>
+                    <p>Cory, your payment to the SAHL has been recieved.<br><br>
+                        This <b>does not</b> indicate your Draft Status.<br>
+                        This only indicates that a payment has gone through.</p>
+                </div>
+                <div class="crReciept">
+                    <h2>Payment Successful</h2>
+                    <h3>Method: <span>Credit Card</span></h3>
+                    <div class="crItem cf">
+                        <p>Season Payed for with Credit Card<br>- does not indicate Draft Status</p>
+                        <p class="crAmount">$400<sup>00</sup></p>
+                    </div>
+                    <p class="paymentInfo">
+                        <strong>Payment Date: </strong> Jan 1, 2016
+                    </p>
+                    <p class="paymentInfo">
+                        <strong>Payment Made By:</strong><br>
+                        Jon Doe<br>
+                        12 Pine Street<br>
+                        Stouffville, ON L4A 8J7<br>
+                    </p>
+                    <p class="paymentInfo">
+                        <strong>Payment Made To:</strong><br>
+                        SAHL<br>
+                        Address, Suite 1<br>
+                        Stouffville, ON L4A 8J7<br>
+                    </p>
+                </div>
+                </div>
+            </div>
+        </div>
+<!-- Start Footer -->
+<footer class="footer-area bg-f">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-md-6">
+                <h3>About Us</h3>
+                <p>Tom Sellers is the Chef Patron of Devil's Kitchen Restaurant. He dreamed of opening Devil's Kitchen
+                    Restaurant at the age of 19, and in April 2013, aged 26, was able to realise his dream. Tom trained
+                    at some of the world’s best restaurants including Restaurant Tom Aikens, Noma and Per Se. </p>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <h3>Opening hours</h3>
+                <p><span class="text-color">Monday: </span> 9AM - 10PM</p>
+                <p><span class="text-color">Tue-Wed :</span> 9AM - 10PM</p>
+                <p><span class="text-color">Thu-Fri :</span> 9AM - 10PM</p>
+                <p><span class="text-color">Sat-Sun :</span> 5PM - 10PM</p>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <h3>Contact information</h3>
+                <p class="lead">50 Steven Road #02-10, Singapore 025123</p>
+                <p class="lead"><a href="#">+65 9203 2103</a></p>
+                <p><a href="#">staff@devilkitchen.yay</a></p>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <h3>Subscribe</h3>
+                <div class="subscribe_form">
+                    <form class="subscribe_form">
+                        <input name="EMAIL" id="subs-email" class="form_input" placeholder="Email Address..."
+                            type="email">
+                        <button type="submit" class="submit">SUBSCRIBE</button>
+                        <div class="clearfix"></div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="copyright">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <p class="company-name">All Rights Reserved. &copy; 2022 <a href="#">Devil's Kitchen Restaurant</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</footer>
+<!-- End Footer -->
+
+<a href="#" id="back-to-top" title="Back to top" style="display: none;">&uarr;</a>
+{% endblock %}
