@@ -3,7 +3,6 @@
 {% block title %} HoHo's Hotel - Cart {% endblock %}
 
 {% block content %}
-
 <style>
 .btn.btn-danger{
 	color: #dc3545;
@@ -21,6 +20,26 @@
 <br>
 <br>
 <br>
+
+{% if 'create_order' in session %}
+<div class="alert alert-success alert-dismissible">
+  <button type="button" class="close" data-dismiss="alert">&times;</button>
+  Order ID {{ session.pop('create_order', None) }} has successfully been made.
+</div>
+{% endif %}
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      {% for message in messages %}
+        {{ message }}
+      {% endfor %}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  {% endif %}
+{% endwith %}
 
 {% if 'create_order' in session %}
 <div class="alert alert-success alert-dismissible">
@@ -57,7 +76,7 @@
         <th>Order Item</th>
 	    <th>Price</th>
 	    <th>Remarks</th>
-        <th></th>
+        <th>Quantity</th>
         <th></th>
       </tr>
     </thead>
@@ -79,6 +98,7 @@
         <td>{{ order.get_order_item() }}</td>
 	    <td>${{ order.get_price() }}</td>
 	    <td>{{ order.get_remarks() }}</td>
+		<td>{{ order.get_quantity() }}</td>
         <td><a href="/updateOrder/{{order.get_order_id()}}" class="btn btn-common">Update</a>
         <td>
           <form action="{{url_for('deleteOrder', id=order.get_order_id())}}"  method="POST">

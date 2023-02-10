@@ -1,4 +1,4 @@
-from flask import Flask,request,flash,render_template,make_response,redirect,url_for,session,jsonify,Markup
+from flask import Flask,request,flash,render_template,make_response,redirect,url_for,session,jsonify,Markup,request
 from flask_login import LoginManager,login_required,logout_user,current_user,login_user
 from sqlalchemy import or_
 from app.Forms import *
@@ -8,9 +8,9 @@ from flask_mail import Mail,Message
 from pyotp import TOTP
 from functools import wraps
 from io import BytesIO
-from app.chargecredit import charge
 from dotenv import load_dotenv
-import hashlib,uuid,random,pyotp,pyqrcode,base64,re,os,stripe
+from google.oauth2 import id_token
+import hashlib,uuid,random,pyotp,pyqrcode,base64,re,os,stripe,requests,datetime
 
 load_dotenv()
 app = Flask(__name__)
@@ -73,6 +73,78 @@ def index():
     print(session)
     session.permanent_session_lifetime = 60 #Resets session backs to 1 minute
     return render_template('index.html')
+
+#Google SSO Not working.
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+#     if current_user.is_authenticated:
+#         return redirect(url_for('index'))
+
+#     # If the request is a POST request (user submitted form data)
+#     if request.method == 'POST':
+#         # Check if the user is logging in with a traditional username and password
+#         username = request.form.get('username')
+#         email = request.form.get('email')
+#         password = request.form.get('password')
+
+#         user = User.query.filter_by(username=username).first() or User.query.filter_by(email=email).first()
+
+#         if user is not None and user.check_password(password):
+#             if user.account_status == 'enabled':
+#                 if user.multifactorauth == "enabled":
+#                     return redirect(url_for("verify2fa"))
+#                 else:
+#                     session['user_id'] = user.id
+#                     session['user_role'] = user.role
+#                     login_user(user)
+#                     return redirect(url_for("index"))
+#             elif user.account_status == 'not_verified':
+#                 flash("Your account is not verified,Contact support for help.")
+#                 return redirect(url_for("login"))
+#             else:
+#                 flash("Your account is disabled,Contact support for help.")
+#                 return redirect(url_for("login"))
+#         else:
+#             flash("Incorrect username or password.")
+#             return redirect(url_for("login"))
+#     # If the request is a GET request (user is requesting the page)
+#     else:
+#         # Check if the user is logging in with Google
+#         google_token = request.args.get('google_token')
+#         if google_token:
+#             # Verify the token with Google
+#             try:
+#                 # Verify the token
+#                 id_info = id_token.verify_oauth2_token(
+#                     google_token, requests.Request(), os.getenv("google_sso_clientid"))
+#                 if id_info:
+#                     email = id_info["email"]
+
+#                     # Check if the user exists in the database
+#                     user = User.query.filter_by(email=email).first()
+#                     if user:
+#                         # Log in the user
+#                         session['user_id'] = user.id
+#                         session['user_role'] = user.role
+#                         login_user(user)
+#                         return redirect(url_for("index"))
+#                     else:
+#                         # Add the user to the database
+#                         user = User(username=email, email=email)
+#                         db.session.add(user)
+#                         db.session.commit()
+
+#                         # Log in the user
+#                         session['user_id'] = user.id
+#                         session['user_role'] = user.role
+#                         login_user(user)
+#                         return redirect(url_for("index"))
+#             except ValueError:
+#                 flash("Invalid Google token.")
+#                 return redirect(url_for("login"))
+
+#     return render_template('login.html', form=CreateUserForm)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -481,15 +553,20 @@ def menu():
 def create_order(order_item, order_price):
     create_order_form = CreateOrderForm(request.form)
     if request.method == 'POST' and create_order_form.validate():
-        order = Order(order_item, create_order_form.meat.data,
-                      create_order_form.sauce.data, create_order_form.remarks.data, order_price, session['user_id'])
-        db.session.add(order)
+        order = Order.query.filter_by(user_id=session['user_id'], order_item=order_item, meat=create_order_form.meat.data, sauce=create_order_form.sauce.data, remarks=create_order_form.remarks.data).first()
+        if order:
+            order.quantity += 1
+        else:
+            order = Order(order_item, create_order_form.meat.data,
+                      create_order_form.sauce.data, create_order_form.remarks.data, order_price, session['user_id'], 1)
+            db.session.add(order)
         db.session.commit()
 
         response = make_response(redirect(url_for('retrieve_order')))
         return response
     resp = make_response(render_template('createorder.html', form=create_order_form, order_item=order_item))
     return resp
+
 
 # Retrieve
 @app.route('/retrieveorder', methods=["GET", "POST"])
@@ -502,9 +579,9 @@ def retrieve_order():
         total = 0
         count = 0
         for item in order_list:
-            total += item.price
-            count += 1
-        total=round(total,0)
+            total += item.price * item.quantity
+            count += item.quantity
+        total = round(total, 2)
         session['order_total'] = total
         if request.method == "POST":
             # Create a Stripe checkout session
@@ -513,13 +590,13 @@ def retrieve_order():
                     {
                         'price_data': {
                             'product_data': {
-                                'name': "Food Order",
+                                'name': item.get_order_item(),
                             },
-                            'unit_amount': int(total*100),
+                            'unit_amount': int(item.get_price() * 100),
                             'currency': 'sgd',
                         },
-                        'quantity': 1,
-                    },
+                        'quantity': int(item.get_quantity()),
+                    } for item in order_list
                 ],
                 payment_method_types=['card'],
                 mode='payment',
@@ -537,17 +614,20 @@ def retrieve_order():
 # Redirect to this endpoint after a successful payment
 @app.route("/success", methods=['GET', 'POST'])
 def payment_success():
+    date = datetime.datetime.now().strftime("%Y-%m-%d")
     total=session.get("order_total")
     order_list = Order.query.filter_by(user_id=session['user_id']).all()
-    for order in order_list:
-        db.session.delete(order)
-    db.session.commit()
-    response = make_response(render_template('paymentsuccessful.html'))
+    print(order_list.get_order_id())
+    # for order in order_list:
+    #     db.session.delete(order)
+    # db.session.commit()
+    response = make_response(render_template('paymentsuccessful.html', order=order_list, total=total, date=date))
     return response
 
 @app.route("/failure")
 def payment_failure():
-    return "Payment Successful!"
+    flash("Payment didn't went through or order was canceled. Please try again.")
+    return redirect(url_for('retrieve_order'))
 
 # Update
 @app.route('/updateOrder/<int:id>/', methods=['GET', 'POST'])

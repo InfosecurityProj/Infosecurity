@@ -39,7 +39,9 @@
 <head>
 	<meta name="google-signin-scope" content="profile email">
 	<meta name="google-signin-client_id"
-		content="546934876717-2siievmmi6mjanopdnr9mi2o0s0p4vtc.apps.googleusercontent.com">
+		content="634594139871-2fleicerb91mlptct40fd80skv0p7anv.apps.googleusercontent.com">
+	<script src="https://apis.google.com/js/platform.js" async defer></script>
+
 </head>
 
 <!--https://www.w3schools.com/howto/howto_css_center_button.asp-->
@@ -214,6 +216,7 @@
 							</div>
 							<div class="col-md-12">
 								<div class="vertical-center">
+									<div class="g-signin2" data-onsuccess="onSignIn"></div>
 									<a href="{{url_for('login')}}">
 										<div class='g-sign-in-button'>
 											<div class=content-wrapper>
@@ -337,7 +340,20 @@
 			icon.classList.remove("fa-eye-slash");
 		}
 	}
+	
 	toggle.addEventListener('click', togglePassword, false);
+	function onSignIn(googleUser) {
+		// Get the user's ID token and basic profile information
+		var id_token = googleUser.getAuthResponse().id_token;
+		var profile = googleUser.getBasicProfile();
+	
+		// Store the user's information in your database, if necessary
+		// ...
+	
+		// Redirect the user to the main page of your application
+		window.location.href = "/index";
+	  }
+	
 </script>
 <a href="#" id="back-to-top" title="Back to top" style="display: none;">&uarr;</a>
 

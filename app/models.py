@@ -160,10 +160,11 @@ class Order(UserMixin,db.Model):
     remarks = db.Column(db.String(50))
     price = db.Column(db.Float)
     user_id = db.Column(db.Integer)
+    quantity = db.Column(db.Integer)
     # user_id = db.Column(db.Integer, primary_key=True)
     # user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=True)
     
-    def __init__(self, order_item, meat, sauce, remarks, price, user_id):
+    def __init__(self, order_item, meat, sauce, remarks, price, user_id, quantity):
         Order.count_id += 1
         self.order_id = Order.count_id
         self.order_item = order_item
@@ -172,7 +173,8 @@ class Order(UserMixin,db.Model):
         self.remarks = remarks
         self.price = price
         self.user_id = user_id
-
+        self.quantity = quantity
+        
     def get_order_id(self):
         return self.id
 
@@ -194,6 +196,9 @@ class Order(UserMixin,db.Model):
     def get_user_id(self):
         return self.user_id
 
+    def get_quantity(self):
+        return self.quantity
+    
     def set_order_id(self, order_id):
         self.order_id = order_id
 
@@ -215,6 +220,9 @@ class Order(UserMixin,db.Model):
     def set_user_id(self, user_id):
         self.user_id = user_id
 
+    def set_quantity(self, quantity):
+        self.quantity = quantity
+    
 class Reservation(UserMixin,db.Model):
     count_id = 0
     __tablename__ = 'reservation'
