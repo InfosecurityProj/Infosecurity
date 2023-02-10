@@ -9,7 +9,6 @@ from pyotp import TOTP
 from functools import wraps
 from io import BytesIO
 from dotenv import load_dotenv
-from google.oauth2 import id_token
 import hashlib,uuid,random,pyotp,pyqrcode,base64,re,os,stripe,requests,datetime
 
 load_dotenv()
