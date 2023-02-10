@@ -59,6 +59,7 @@
 						<p>Last name: {{ profile.get_last_name() }}</p>
 						<p>Gender: {{ profile.get_gender() }}</p>
 						<p>Email: {{ profile.get_email() }}</p>
+						<p>2FA: {{ profile.get_multifactorauth() }}</p>
 					</div>
 				</div>
 
@@ -130,7 +131,7 @@
 								</div>
 							</div>
 						</div>
-						<button type="button" class="btn btn-danger" data-toggle="modal" data-target="#qrCodeModal" id="show-qr-code-button">Show QR Code</button>
+						<button type="button" class="btn btn-danger" data-toggle="modal" data-target="#qrCodeModal" id="show-qr-code-button">Enable 2FA</button>
 						<!-- <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#qrCodeModal">Show QR Code</button> -->
 								<div class="modal fade" id="qrCodeModal" tabindex="-1" role="dialog" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
 									<div class="modal-dialog" role="document">

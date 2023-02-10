@@ -9,12 +9,12 @@ from pyotp import TOTP
 from functools import wraps
 from io import BytesIO
 from dotenv import load_dotenv
-import hashlib,uuid,random,pyotp,pyqrcode,base64,re,os,stripe,requests,datetime
+from google.oauth2 import id_token
+import hashlib,uuid,random,pyotp,pyqrcode,base64,re,os,stripe,requests,datetime,secrets
 
 load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("app_secret")
-totp_secret = os.getenv("totp_key")#pyotp.random_base32()
 app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # session timeout is 1 hour(3600Sec)
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -46,14 +46,14 @@ def check_role(roles):
 
 with app.app_context():
     db.create_all()
-    users = User.query.all()
-    print(users)
-    if User.query.filter_by(username="admin").first() or User.query.filter_by(username="kurokami").first():
+    # users = User.query.all()
+    # print(users)
+    # if User.query.filter_by(username="admin").first() or User.query.filter_by(username="kurokami").first():
     # The "admin" username already exists, so handle the error
         # print("admin exist")
-        pass
-    else:
-        pass
+    #     pass
+    # else:
+    #     pass
         # The "admin" username does not exist, so create a new user
         # admin=User(username="admin",email="admin@gmail.com",password_hash="7a14def6c43d661e14c59a3dd7174f617137b338ea128d428868e677dc3bed00",role="Administrator",
         #                 title="Mister",first_name="admin",last_name=" ",gender="M",account_salt="7f7ae7b152053e0e99d2db2cdb8caea759c473353322c8de03798357c0810b88",account_status="enabled",multifactorauth="disabled")
@@ -249,11 +249,11 @@ def verify():
 def verify2fa():
     if request.method == 'POST':
         entered_code = request.form['code']
-        totp=TOTP(totp_secret)
+        email = session.get('email')
+        user = User.query.filter_by(email=email).first()
+        totp=TOTP(user.get_totpsecret())
         print(f"entered_code {entered_code} totp {totp}")
         if totp.verify(entered_code):
-            email = session.get('email')
-            user = User.query.filter_by(email=email).first()
             session['user_id'] = user.id
             session['user_role'] = user.role
             session['email'] = user.email
@@ -499,10 +499,14 @@ def submit_password():
     )
     if user.password_hash != hashed_password.hex():
         return jsonify(password_correct=False)
-    email = session.get('email')
+    email = str(user.get_email())
     app_name = "HoHoHotels"
+    totp_secret = base64.b32encode(bytes.fromhex(secrets.token_hex(16))).decode().rstrip('=').rstrip('L').rstrip('I')
+    print(f"TOTP Secret: {totp_secret} Email:{email}")
+    user.totpsecret=totp_secret
+    db.session.commit()
     totp = pyotp.TOTP(totp_secret, interval=30)
-    qr = pyqrcode.create(totp.provisioning_uri(email,issuer_name=app_name))
+    qr = pyqrcode.create(totp.provisioning_uri(name=email,issuer_name=app_name))
     print(qr)
     buffer = BytesIO()
     qr.svg(buffer)
@@ -616,10 +620,9 @@ def payment_success():
     date = datetime.datetime.now().strftime("%Y-%m-%d")
     total=session.get("order_total")
     order_list = Order.query.filter_by(user_id=session['user_id']).all()
-    print(order_list.get_order_id())
-    # for order in order_list:
-    #     db.session.delete(order)
-    # db.session.commit()
+    for order in order_list:
+        db.session.delete(order)
+    db.session.commit()
     response = make_response(render_template('paymentsuccessful.html', order=order_list, total=total, date=date))
     return response
 
@@ -666,18 +669,18 @@ def deleteOrder(id):
     return resp
 
 #TOTP Code Testing
-@app.route('/code')
-@check_role(['Administrator','User'])
-def generate_qr_code():
-    email = session.get('email')
-    app_name = "HoHoHotels"
-    totp = pyotp.TOTP(totp_secret, interval=30)
-    qr = pyqrcode.create(totp.provisioning_uri(email,issuer_name=app_name))
-    buffer = BytesIO()
-    qr.svg(buffer)
-    qr_svg_str = buffer.getvalue()
-    qr_svg_b64 = base64.b64encode(qr_svg_str).decode()
-    return render_template('code.html', qr_svg_b64=qr_svg_b64)
+# @app.route('/code')
+# @check_role(['Administrator','User'])
+# def generate_qr_code():
+#     email = session.get('email')
+#     app_name = "HoHoHotels"
+#     totp = pyotp.TOTP(totp_secret, interval=30)
+#     qr = pyqrcode.create(totp.provisioning_uri(email,issuer_name=app_name))
+#     buffer = BytesIO()
+#     qr.svg(buffer)
+#     qr_svg_str = buffer.getvalue()
+#     qr_svg_b64 = base64.b64encode(qr_svg_str).decode()
+#     return render_template('code.html', qr_svg_b64=qr_svg_b64)
 
 def check_special(string):
     regex = re.compile('[@_!#$%^&*()<>?/|}{~:]')

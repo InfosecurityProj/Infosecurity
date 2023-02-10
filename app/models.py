@@ -20,8 +20,9 @@ class User(UserMixin,db.Model):
     account_salt = db.Column(db.String(255))
     account_status = db.Column(db.String(10), default="enabled")
     multifactorauth = db.Column(db.String(10), default="disabled")
+    totpsecret = db.Column(db.String(255))
 
-    def __init__(self,username,email,password_hash,role,title,first_name,last_name,gender,account_status):
+    def __init__(self,username,email,password_hash,role,title,first_name,last_name,gender,account_status,totpsecret):
         self.user_id = User.id
         self.username = username
         self.password_hash = password_hash
@@ -32,6 +33,7 @@ class User(UserMixin,db.Model):
         self.title = title
         self.email = email
         self.account_status = account_status
+        self.totpsecret = totpsecret
     
     def set_password(self, password):
         Useruuid = str(uuid.uuid4())[:8].encode('utf-8')
@@ -111,6 +113,9 @@ class User(UserMixin,db.Model):
     def set_multifactorauth(self,multifactorauth):
         self.multifactorauth = multifactorauth
     
+    def set_totpsecret(self,totpsecret):
+        self.totpsecret = totpsecret
+    
     def get_id(self):
         return self.id
     
@@ -146,6 +151,9 @@ class User(UserMixin,db.Model):
     
     def get_multifactorauth(self):
         return self.multifactorauth
+    
+    def get_totpsecret(self):
+        return self.totpsecret
     
     def has_role(self, role):
         return self.role == role

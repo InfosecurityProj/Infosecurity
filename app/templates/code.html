@@ -1,16 +1,151 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>QR Code</title>
-</head>
-<body>
-    <div>
-    <h2>Scan this QR code with your 2FA app</h2>
-        <img src="data:image/svg+xml;base64, {{ qr_svg_b64 }}" alt="QR code" width="200" height="200">
-    </div>
-    <div>
-    <p>Don't have a 2FA app? <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&hl=en">Download Google Authenticator here</a> </p>
-    </div>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %} HoHo's Tavern - Profile {% endblock %}
 
+{% block content %}
+
+<style>
+    .userProfile {
+        font-size: 1.5em;
+    }
+
+    .btn.btn-danger {
+        color: #dc3545;
+        background-color: transparent;
+        background-image: none;
+        border-color: #dc3545;
+    }
+
+    .btn.btn-danger:hover {
+        color: #ffffff;
+        background-color: #dc3545;
+        border-color: #dc3545;
+</style>
+
+<br>
+<br>
+<br>
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-primary alert-dismissible fade show" role="alert">
+    <span>{{ message }}</span>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+<!-- Start Reservation Details -->
+<div class="reservation-box">
+    <div class="col-lg-12">
+        <div class="heading-title text-center">
+            <h2>Profile</h2>
+        </div>
+    </div>
+
+    <div class="reservation-box">
+        <div class="container">
+            <div class="text-center">
+                <h1>Hi There!</h1>
+            </div>
+            <div>
+                <h2>Scan this QR code with your 2FA app</h2>
+                <img src="data:image/svg+xml;base64, {{ qr_svg_b64 }}" alt="QR code" width="200" height="200">
+            </div>
+            <div>
+                <p>Don't have a 2FA app? <a
+                        href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&hl=en">Download
+                        Google Authenticator here</a> </p>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+<!-- End Profile Details -->
+
+<!-- Start Footer -->
+<footer class="footer-area bg-f">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-md-6">
+                <h3>About Us</h3>
+                <p>The founder of HoHo's Tavern is a 30-year-old named Hovan, who dreamed of opening his own tavern
+                    business. He founded HoHo's Tavern on March 2023 which was a great accomplishment of his. He started
+                    having this dream back when he was 20 years old. To achieve this dream, he studied overseas at China
+                    to learn business management for 10 years. </p>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <h3>Tavern Opening hours</h3>
+                <p><span class="text-color">Monday: </span>9AM - 10PM</p>
+                <p><span class="text-color">Tue-Wed :</span> 9AM - 10PM</p>
+                <p><span class="text-color">Thu-Fri :</span> 9AM - 10PM</p>
+                <p><span class="text-color">Sat-Sun :</span> 5PM - 10PM</p>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <h3>Contact information</h3>
+                <p class="lead">50 Horn Road #02-10, Singapore 888888</p>
+                <p class="lead"><a href="#">+65 8812 6296</a></p>
+                <p><a href="#">info@Hoho_Tavern.py</a></p>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <h3>Subscribe</h3>
+                <div class="subscribe_form">
+                    <form class="subscribe_form">
+                        <input name="EMAIL" id="subs-email" class="form_input" placeholder="Email Address..."
+                            type="email">
+                        <button type="submit" class="submit">SUBSCRIBE</button>
+                        <div class="clearfix"></div>
+                    </form>
+                </div>
+                <ul class="list-inline f-social">
+                    <li class="list-inline-item"><a href="#"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+                    <li class="list-inline-item"><a href="#"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+                    <li class="list-inline-item"><a href="#"><i class="fa fa-linkedin" aria-hidden="true"></i></a></li>
+                    <li class="list-inline-item"><a href="#"><i class="fa fa-google-plus" aria-hidden="true"></i></a>
+                    </li>
+                    <li class="list-inline-item"><a href="#"><i class="fa fa-instagram" aria-hidden="true"></i></a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="copyright">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <p class="company-name">All Rights Reserved. &copy; 2022 <a href="#">HoHo's Tavern</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</footer>
+<!-- End Footer -->
+
+<a href="#" id="back-to-top" title="Back to top" style="display: none;">&uarr;</a>
+<script>
+    $(document).ready(function () {
+        $('form').on('submit', function (event) {
+            event.preventDefault();
+
+            // send form data to the server
+            // handle the response and check if the password is correct
+            $.post("/submit_password", $("form").serialize(), function (response) {
+                if (response.password_correct) {
+                    // if the password is correct, show the modal
+                    $("#show-qr-code-button").click();
+                } else {
+                    // if the password is incorrect, show an error message
+                    alert("Incorrect password, please try again.");
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}
