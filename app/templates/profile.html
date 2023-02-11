@@ -68,13 +68,20 @@
 						<a style="display:inline-block;" href="/updateU/{{profile.get_id()}}"
 							class="btn btn-common">Update</a>
 						<a style="display:inline-block;">
+							<!-- <button style="display:inline-block;" type="button" class="btn btn-danger"
+								data-toggle="modal" data-target="#myModal_{{profile.get_id()}}">
+								Delete
+							</button> -->
+							<button type="button" class="btn btn-danger" data-toggle="modal"
+								data-target="#deleteAccountModal">Delete Account</button>
+							{% if multifactor == "disabled"%}
+							<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#qrCodeModal"
+								id="show-qr-code-button">Enable 2FA</button>
+							{% else %}
+							<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#disable2faModal"
+								id="show-qr-code-button">Disable 2FA</button>
+							{% endif %}
 							<form action="{{url_for('delete_user', id=profile.get_id())}}" method="POST">
-								<button style="display:inline-block;" type="button" class="btn btn-danger"
-									data-toggle="modal" data-target="#myModal_{{profile.get_id()}}">
-									Delete
-								</button>
-								<button type="button" class="btn btn-danger" data-toggle="modal"
-									data-target="#deleteAccountModal">Delete Account</button>
 								<!-- The Modal -->
 								<div class="modal" id="myModal_{{profile.get_id()}}">
 									<div class="modal-dialog">
@@ -131,50 +138,75 @@
 								</div>
 							</div>
 						</div>
-						<button type="button" class="btn btn-danger" data-toggle="modal" data-target="#qrCodeModal" id="show-qr-code-button">Enable 2FA</button>
-						<!-- <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#qrCodeModal">Show QR Code</button> -->
-								<div class="modal fade" id="qrCodeModal" tabindex="-1" role="dialog" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
-									<div class="modal-dialog" role="document">
-										<div class="modal-content">
-											<div class="modal-header">
-												<h5 class="modal-title" id="qrCodeModalLabel">Two-Factor Authentication</h5>
-												<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-													<span aria-hidden="true">&times;</span>
-												</button>
+						<div class="modal fade" id="qrCodeModal" tabindex="-1" role="dialog"
+							aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+							<div class="modal-dialog" role="document">
+								<div class="modal-content">
+									<div class="modal-header">
+										<h5 class="modal-title" id="qrCodeModalLabel">Two-Factor Authentication</h5>
+										<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+											<span aria-hidden="true">&times;</span>
+										</button>
+									</div>
+									<div class="modal-body">
+										<form method="POST" action="{{ url_for('submit_password') }}">
+											<div class="form-group">
+												<label for="password">Enter your password to confirm:</label>
+												<input type="password" class="form-control" id="password"
+													name="password">
 											</div>
-											<div class="modal-body">
-												<form method="POST" action="{{ url_for('submit_password') }}">
-													<div class="form-group">
-														<label for="password">Enter your password to confirm:</label>
-														<input type="password" class="form-control" id="password" name="password">
-													</div>
-													<button type="submit" class="btn btn-primary">Submit</button>
-												</form>
-											</div>
-										</div>
+											<button type="submit" class="btn btn-primary">Submit</button>
+										</form>
 									</div>
 								</div>
-								<!-- <button type="button" class="btn btn-danger" id="show-qr-code-button">Show QR Code</button>
-
-<div class="modal fade" id="qrCodeModal" tabindex="-1" role="dialog" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="qrCodeModalLabel">Two-Factor Authentication</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <img src="data:image/svg+xml;base64,{{ qr_svg_b64 }}" alt="QR code">
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div> -->
-
+							</div>
+						</div>
+						<div class="modal fade" id="qrCodeModal" tabindex="-1" role="dialog"
+							aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+							<div class="modal-dialog" role="document">
+								<div class="modal-content">
+									<div class="modal-header">
+										<h5 class="modal-title" id="qrCodeModalLabel">Two-Factor Authentication</h5>
+										<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+											<span aria-hidden="true">&times;</span>
+										</button>
+									</div>
+									<div class="modal-body">
+										<form method="POST" action="{{ url_for('submit_password') }}">
+											<div class="form-group">
+												<label for="password">Enter your password to confirm:</label>
+												<input type="password" class="form-control" id="password"
+													name="password">
+											</div>
+											<button type="submit" class="btn btn-primary">Submit</button>
+										</form>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="modal fade" id="disable2faModal" tabindex="-1" role="dialog"
+							aria-labelledby="disable2faLabel" aria-hidden="true">
+							<div class="modal-dialog" role="document">
+								<div class="modal-content">
+									<div class="modal-header">
+										<h5 class="modal-title" id="disable2faLabel">Disabling Two-Factor Authentication</h5>
+										<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+											<span aria-hidden="true">&times;</span>
+										</button>
+									</div>
+									<div class="modal-body">
+										<form method="POST" action="{{ url_for('disable2fa') }}">
+											<div class="form-group">
+												<label for="password">Enter your password to confirm:</label>
+												<input type="password" class="form-control" id="password"
+													name="password">
+											</div>
+											<button type="submit" class="btn btn-primary">Submit</button>
+										</form>
+									</div>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -189,7 +221,10 @@
 		<div class="row">
 			<div class="col-lg-3 col-md-6">
 				<h3>About Us</h3>
-				<p>The founder of HoHo's Tavern is a 30-year-old named Hovan, who dreamed of opening his own tavern business. He founded HoHo's Tavern on March 2023 which was a great accomplishment of his. He started having this dream back when he was 20 years old. To achieve this dream, he studied overseas at China to learn business management for 10 years. </p>
+				<p>The founder of HoHo's Tavern is a 30-year-old named Hovan, who dreamed of opening his own tavern
+					business. He founded HoHo's Tavern on March 2023 which was a great accomplishment of his. He started
+					having this dream back when he was 20 years old. To achieve this dream, he studied overseas at China
+					to learn business management for 10 years. </p>
 			</div>
 			<div class="col-lg-3 col-md-6">
 				<h3>Tavern Opening hours</h3>
@@ -242,13 +277,13 @@
 
 <a href="#" id="back-to-top" title="Back to top" style="display: none;">&uarr;</a>
 <script>
-	$(document).ready(function() {
-		$('form').on('submit', function(event) {
+	$(document).ready(function () {
+		$('form').on('submit', function (event) {
 			event.preventDefault();
-	
+
 			// send form data to the server
 			// handle the response and check if the password is correct
-			$.post("/submit_password", $("form").serialize(), function(response) {
+			$.post("/submit_password", $("form").serialize(), function (response) {
 				if (response.password_correct) {
 					// if the password is correct, show the modal
 					$("#show-qr-code-button").click();

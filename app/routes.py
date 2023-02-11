@@ -9,16 +9,19 @@ from pyotp import TOTP
 from functools import wraps
 from io import BytesIO
 from dotenv import load_dotenv
-from google.oauth2 import id_token
-import hashlib,uuid,random,pyotp,pyqrcode,base64,re,os,stripe,requests,datetime,secrets
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+import hashlib,uuid,random,pyotp,pyqrcode,base64,re,os,stripe,datetime,secrets
 
+#Configuration
 load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("app_secret")
+limiter = Limiter(app, key_func=get_remote_address)
 app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # session timeout is 1 hour(3600Sec)
 login_manager = LoginManager()
 login_manager.init_app(app)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test1.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 db.init_app(app)
 
 #Email Configuration
@@ -33,6 +36,7 @@ mail = Mail(app)
 #Payment
 stripe.api_key = os.getenv("stripe_api_key")
 
+#Functions
 def check_role(roles):
     def decorator(f):
         @wraps(f)
@@ -44,6 +48,14 @@ def check_role(roles):
         return decorated_function
     return decorator
 
+def check_special(string):
+    regex = re.compile('[@_!#$%^&*()<>?/|}{~:]')
+    if (regex.search(string) == None):
+        return True
+    else:
+        return False
+
+#Creating DB if it doesn't exists
 with app.app_context():
     db.create_all()
     # users = User.query.all()
@@ -67,86 +79,19 @@ with app.app_context():
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+
+#Pages
 @app.route('/')
 def index():
     print(session)
     session.permanent_session_lifetime = 60 #Resets session backs to 1 minute
     return render_template('index.html')
 
-#Google SSO Not working.
-# @app.route('/login', methods=['GET', 'POST'])
-# def login():
-#     if current_user.is_authenticated:
-#         return redirect(url_for('index'))
-
-#     # If the request is a POST request (user submitted form data)
-#     if request.method == 'POST':
-#         # Check if the user is logging in with a traditional username and password
-#         username = request.form.get('username')
-#         email = request.form.get('email')
-#         password = request.form.get('password')
-
-#         user = User.query.filter_by(username=username).first() or User.query.filter_by(email=email).first()
-
-#         if user is not None and user.check_password(password):
-#             if user.account_status == 'enabled':
-#                 if user.multifactorauth == "enabled":
-#                     return redirect(url_for("verify2fa"))
-#                 else:
-#                     session['user_id'] = user.id
-#                     session['user_role'] = user.role
-#                     login_user(user)
-#                     return redirect(url_for("index"))
-#             elif user.account_status == 'not_verified':
-#                 flash("Your account is not verified,Contact support for help.")
-#                 return redirect(url_for("login"))
-#             else:
-#                 flash("Your account is disabled,Contact support for help.")
-#                 return redirect(url_for("login"))
-#         else:
-#             flash("Incorrect username or password.")
-#             return redirect(url_for("login"))
-#     # If the request is a GET request (user is requesting the page)
-#     else:
-#         # Check if the user is logging in with Google
-#         google_token = request.args.get('google_token')
-#         if google_token:
-#             # Verify the token with Google
-#             try:
-#                 # Verify the token
-#                 id_info = id_token.verify_oauth2_token(
-#                     google_token, requests.Request(), os.getenv("google_sso_clientid"))
-#                 if id_info:
-#                     email = id_info["email"]
-
-#                     # Check if the user exists in the database
-#                     user = User.query.filter_by(email=email).first()
-#                     if user:
-#                         # Log in the user
-#                         session['user_id'] = user.id
-#                         session['user_role'] = user.role
-#                         login_user(user)
-#                         return redirect(url_for("index"))
-#                     else:
-#                         # Add the user to the database
-#                         user = User(username=email, email=email)
-#                         db.session.add(user)
-#                         db.session.commit()
-
-#                         # Log in the user
-#                         session['user_id'] = user.id
-#                         session['user_role'] = user.role
-#                         login_user(user)
-#                         return redirect(url_for("index"))
-#             except ValueError:
-#                 flash("Invalid Google token.")
-#                 return redirect(url_for("login"))
-
-#     return render_template('login.html', form=CreateUserForm)
-
 
 @app.route('/login', methods=['GET', 'POST'])
+@limiter.limit("10/minute", methods=['GET', 'POST'])
 def login():
+    global login_code
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     if request.method == 'POST':
@@ -163,6 +108,31 @@ def login():
             if user.account_status == 'enabled':
                 if user.multifactorauth == "enabled":
                     return redirect(url_for("verify2fa"))
+                elif user.multifactorauth == "disabled" and user.account_status=="enabled":
+                        login_code = str(random.randint(1000, 9999))
+                        msg = Message("Verification Code",
+                            sender= os.getenv("email_username"),
+                            recipients=[user.get_email()])
+                        html_content = """
+                        <html>
+                        <head>
+                            <title>Verification Code</title>
+                        </head>
+                        <div class='hoho' style="font-family: arial; width: 100%; text-align: center; border: 4px solid #888; border-radius: 5px; width: 500px; max-width: 500px; margin: auto; padding: 20px;">
+                                <div class='logo' style="width: 100%">
+                                    <img src="https://i.ibb.co/1G7wy3M/logo.png" style="width:120px; margin: 10px auto;">
+                                </div>
+                                <p>Hello, {}.</p> 
+                                    <p>Here's your one-time code: <b>{}</b></p>
+                                    <p>This code is only valid for 30 minutes</p>
+                                    <p>HoHo's Tavern staff will <b>never</b> ask you for this code. Never give it out to anyone!</p>
+                                    <p>For your own security, only enter this code into the official HoHo's Tavern website</p>
+                            </div>
+                        </html>
+                        """.format(user.get_username(),login_code)
+                        msg.html = html_content
+                        mail.send(msg)
+                        return redirect(url_for('logincode'))
                 else:
                     session['user_id'] = user.id
                     session['user_role'] = user.role
@@ -189,6 +159,7 @@ def login():
     return render_template('login.html', form=CreateUserForm)
 
 @app.route('/register', methods=['GET', 'POST'])
+@limiter.limit("5/minute", methods=['GET', 'POST'])
 def register():
     global verification_code
     create_user_form = CreateUserForm(request.form)
@@ -214,7 +185,7 @@ def register():
                 return redirect(url_for('login'))
             else:
                 user = User(username=username,email=email,password_hash=password,account_status="not_verified",role="User",
-                            title=title,first_name=first_name,last_name=last_name,gender=gender)
+                            title=title,first_name=first_name,last_name=last_name,gender=gender,totpsecret="none")
                 user.set_password(password)
                 db.session.add(user)
                 db.session.commit()
@@ -224,13 +195,30 @@ def register():
                 msg = Message("Verification Code",
                             sender= os.getenv("email_username"),
                             recipients=[email])
-                msg.body = "Welcome {}!\nThanks for signing up, you’re almost done creating your account!.\nYour verification code is: {}.\nPlease complete the account verification process in 30 minutes.".format(username,verification_code)
+                html_content = """
+                <html>
+                <head>
+                    <title>Verification Code</title>
+                </head>
+                <div class='hoho' style="font-family: arial; width: 100%; text-align: center; border: 4px solid #888; border-radius: 5px; width: 500px; max-width: 500px; margin: auto; padding: 20px;">
+                        <div class='logo' style="width: 100%">
+                            <img src="https://i.ibb.co/1G7wy3M/logo.png" style="width:120px; margin: 10px auto;">
+                        </div>
+                        <p>Hello, {}.</p> 
+                            <p>Here's your one-time code: <b>{}</b></p>
+                            <p>This code is only valid for 30 minutes</p>
+                            <p>HoHo's Tavern staff will <b>never</b> ask you for this code. Never give it out to anyone!</p>
+                            <p>For your own security, only enter this code into the official HoHo's Tavern website</p>
+                    </div>
+                </html>
+                """.format(username,verification_code)
+                msg.html = html_content
                 mail.send(msg)
-                #flash('Congratulations, you are now a registered user!')
                 return redirect(url_for('verify'))
     return render_template('register.html', form=create_user_form)
 
 @app.route('/verify', methods=['GET', 'POST'])
+@check_role(['Administrator','User','Guest'])
 def verify():
     if request.method == 'POST':
         entered_code = request.form['code']
@@ -240,12 +228,33 @@ def verify():
             user.account_status = 'enabled'
             db.session.commit()
             flash('Your account has been verified. You can now login.')
+            session['user_id'] = user.id
+            session['user_role'] = user.role
+            login(user)
             return redirect(url_for('login'))
         else:
             flash('Invalid verification code.')
     return render_template('validate.html')
 
+@app.route('/logincode', methods=['GET', 'POST'])
+@check_role(['Administrator','User','Guest'])
+def logincode():
+    if request.method == 'POST':
+        entered_code = request.form['code']
+        email = session.get('email')
+        user = User.query.filter_by(username=email).first() or User.query.filter_by(email=email).first()
+        if entered_code == login_code:
+            print(session)
+            session['user_id'] = user.id
+            session['user_role'] = user.role
+            login_user(user)
+            return redirect(url_for('index'))
+        else:
+            flash('Invalid verification code.')
+    return render_template('loginvalidate.html')
+
 @app.route('/verify2fa', methods=['GET', 'POST'])
+@check_role(['Administrator','User','Guest'])
 def verify2fa():
     if request.method == 'POST':
         entered_code = request.form['code']
@@ -262,29 +271,6 @@ def verify2fa():
         else:
             flash('Invalid verification code.')
     return render_template('validate2fa.html')
-
-# @app.route('/register', methods=['GET', 'POST'])
-# def register():
-#     create_user_form = CreateUserForm(request.form)
-#     if current_user.is_authenticated:
-#         return redirect(url_for('index'))
-#     #and create_user_form.validate()
-#     if request.method == 'POST' :
-#             username = request.form['username']
-#             password = request.form['password']
-#             first_name = request.form['first_name']
-#             last_name = request.form['last_name']
-#             gender = request.form['gender']
-#             title = request.form['title']
-#             email = request.form['email']
-#             user = User(username=username,email=email,password_hash=password,account_status="enabled",role="User",
-#                         title=title,first_name=first_name,last_name=last_name,gender=gender)
-#             user.set_password(password)
-#             db.session.add(user)
-#             db.session.commit()
-#             flash('Congratulations, you are now a registered user!')
-#             return redirect(url_for('login'))
-#     return render_template('register.html', form=create_user_form)
 
 @app.route('/retrieving')
 @check_role('Administrator')
@@ -381,7 +367,6 @@ def delete_user(id):
         else:
             resp = make_response(redirect(url_for('login')))
             return resp
-    # session['user_deleted'] = user.get_first_name() + ' ' + user.get_last_name()
     
 # profile
 @app.route("/profile")
@@ -391,13 +376,9 @@ def profile():
     if not session.get('user_role'):
         session['user_role'] = 'Guest'
     if 'user_id' in session and current_user.is_authenticated:
-        if session['user_role'] == 'Administrator':
+        if session['user_role'] == 'Administrator' or session['user_role'] == 'User':
             user = User.query.filter_by(id=session['user_id']).first()
-            resp = make_response(render_template('profile.html', profile=user))
-            return resp
-        if session['user_role'] == 'User':
-            user = User.query.filter_by(id=session['user_id']).first()
-            resp = make_response(render_template('profile.html', profile=user))
+            resp = make_response(render_template('profile.html', profile=user,multifactor=user.get_multifactorauth()))
             return resp
         else:
             flash("You have been logged out due to 30 minutes of inactivity. Please re-login again.")
@@ -413,8 +394,10 @@ def profile():
 def logout():
     session.pop('user_id', None)
     session.pop('user_role', None)
+    session.pop('email', None)
     logout_user()
     session['user_role'] = 'Guest'
+    
     flash("Logout successful!")
     return redirect(url_for("login"))
 
@@ -451,37 +434,6 @@ def delete_account():
         flash("The password you entered does not match our records. Please try again.")
         resp = make_response(redirect(url_for('profile')))
         return resp
-    
-# @app.route('/submit_password', methods=['POST'])
-# def submit_password():
-#     user_id = session.get('user_id')
-#     password = request.form.get('password')
-#     user = User.query.filter_by(id=user_id).first()
-#     Useruuid = str(uuid.uuid4())[:8].encode('utf-8')
-#     salt = bytes(hashlib.sha256(Useruuid).hexdigest(), "utf-8")
-#     salt = user.account_salt
-#     # print(salt,"password salt")
-#     hashed_password = hashlib.pbkdf2_hmac(
-#         "sha256",  # The hashing algorithm to use
-#         password.encode(),  # The password to hash, as bytes
-#         salt,  # The salt to use, as bytes
-#         100000  # The number of iterations to use
-#     )
-#     # print(f"hashed_password{hashed_password.hex()} user.password:{user.password_hash}")
-#     if user.password_hash != hashed_password.hex():
-#     #if entered_password != user_password:
-#         flash('Incorrect password')
-#         return redirect(url_for('profile'))
-#     email = 'example@example.com'
-#     app_name = "HoHoHotels"
-#     secret = pyotp.random_base32()
-#     totp = pyotp.TOTP(secret, interval=30)
-#     qr = pyqrcode.create(totp.provisioning_uri(email,issuer_name=app_name))
-#     buffer = BytesIO()
-#     qr.svg(buffer)
-#     qr_svg_str = buffer.getvalue()
-#     qr_svg_b64 = base64.b64encode(qr_svg_str).decode()
-#     return render_template('code.html', qr_svg_b64=qr_svg_b64)
 
 @app.route('/submit_password', methods=['POST'])
 def submit_password():
@@ -507,7 +459,6 @@ def submit_password():
     db.session.commit()
     totp = pyotp.TOTP(totp_secret, interval=30)
     qr = pyqrcode.create(totp.provisioning_uri(name=email,issuer_name=app_name))
-    print(qr)
     buffer = BytesIO()
     qr.svg(buffer)
     qr_svg_str = buffer.getvalue()
@@ -515,7 +466,27 @@ def submit_password():
     user.multifactorauth = 'enabled'
     db.session.commit()
     return render_template('code.html', qr_svg_b64=qr_svg_b64)
-    # return jsonify(password_correct=True)
+
+@app.route('/disable2fa', methods=['POST'])
+def disable2fa():
+    user_id = session.get('user_id')
+    password = request.form.get('password')
+    user = User.query.filter_by(id=user_id).first()
+    Useruuid = str(uuid.uuid4())[:8].encode('utf-8')
+    salt = bytes(hashlib.sha256(Useruuid).hexdigest(), "utf-8")
+    salt = user.account_salt
+    hashed_password = hashlib.pbkdf2_hmac(
+        "sha256",  # The hashing algorithm to use
+        password.encode(),  # The password to hash, as bytes
+        salt,  # The salt to use, as bytes
+        100000  # The number of iterations to use
+    )
+    if user.password_hash != hashed_password.hex():
+        return jsonify(password_correct=False)
+    user.multifactorauth = 'disabled'
+    user.totpsecret = ''
+    db.session.commit()
+    return redirect(url_for("profile"))
 
 #Create Order
 @app.route('/menu', methods=['GET', 'POST'])
@@ -569,7 +540,6 @@ def create_order(order_item, order_price):
         return response
     resp = make_response(render_template('createorder.html', form=create_order_form, order_item=order_item))
     return resp
-
 
 # Retrieve
 @app.route('/retrieveorder', methods=["GET", "POST"])
@@ -668,27 +638,6 @@ def deleteOrder(id):
     resp = make_response(redirect(url_for('retrieve_order')))
     return resp
 
-#TOTP Code Testing
-# @app.route('/code')
-# @check_role(['Administrator','User'])
-# def generate_qr_code():
-#     email = session.get('email')
-#     app_name = "HoHoHotels"
-#     totp = pyotp.TOTP(totp_secret, interval=30)
-#     qr = pyqrcode.create(totp.provisioning_uri(email,issuer_name=app_name))
-#     buffer = BytesIO()
-#     qr.svg(buffer)
-#     qr_svg_str = buffer.getvalue()
-#     qr_svg_b64 = base64.b64encode(qr_svg_str).decode()
-#     return render_template('code.html', qr_svg_b64=qr_svg_b64)
-
-def check_special(string):
-    regex = re.compile('[@_!#$%^&*()<>?/|}{~:]')
-    if (regex.search(string) == None):
-        return True
-    else:
-        return False
-    
 #Reservation
 @app.route('/createReserve', methods=["GET", "POST"])
 def createReserve():
@@ -858,7 +807,7 @@ def updateReserve(id):
 
         resp = make_response(render_template('updateReserve.html', form=update_reserve_form))
         return resp
-
+    
 @app.route('/unauthorized')
 def unauthorized():
     return render_template('unauthorized.html')
@@ -870,3 +819,7 @@ def unauthorized():
 # @app.errorhandler(404)#webpage for 401
 # def not_found_error(error):
 #     return render_template('404.html')
+
+@app.errorhandler(429)
+def too_many_request(error):
+    return render_template('429.html')
