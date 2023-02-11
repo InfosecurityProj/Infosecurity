@@ -492,16 +492,7 @@ def disable2fa():
 @app.route('/menu', methods=['GET', 'POST'])
 def menu():
     if request.method == "POST":
-        if request.form['menu'] == 'Tea':
-            order_item = 'Tea'
-            order_price = 5.79
-        elif request.form['menu'] == 'Fruit Juice':
-            order_item = 'Fruit Juice'
-            order_price = 8.79
-        elif request.form['menu'] == 'Soft Drink':
-            order_item = 'Soft Drink'
-            order_price = 7.79
-        elif request.form['menu'] == 'Burger':
+        if request.form['menu'] == 'Burger':
             order_item = 'Burger'
             order_price = 15.79
         elif request.form['menu'] == 'Salad':
@@ -513,12 +504,18 @@ def menu():
         elif request.form['menu'] == 'Steak':
             order_item = 'Steak'
             order_price = 25.79
-        elif request.form['menu'] == 'Korean Rice':
-            order_item = 'Korean Rice'
-            order_price = 22.79
-        elif request.form['menu'] == 'Hotplate':
-            order_item = 'Hotplate'
-            order_price = 24.79
+        elif request.form['menu'] == 'Tequila':
+            order_item = 'Tequila'
+            order_price = 25.00
+        elif request.form['menu'] == 'Flaming Lambo':
+            order_item = 'Flaming Lambo'
+            order_price = 30.00
+        elif request.form['menu'] == 'Sake':
+            order_item = 'Sake'
+            order_price = 15.00
+        elif request.form['menu'] == '1664 Blanc':
+            order_item = '1664 Blanc'
+            order_price = 10.00
         return redirect(url_for('create_order', order_item=order_item, order_price=order_price))
     else:
         return render_template("menu.html")
