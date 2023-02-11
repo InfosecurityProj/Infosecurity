@@ -110,7 +110,7 @@ def login():
                     return redirect(url_for("verify2fa"))
                 elif user.multifactorauth == "disabled" and user.account_status=="enabled":
                         login_code = str(random.randint(1000, 9999))
-                        msg = Message("Verification Code",
+                        msg = Message("Your One-Time Verification Code is {}".format(login_code),
                             sender= os.getenv("email_username"),
                             recipients=[user.get_email()])
                         html_content = """
@@ -192,7 +192,7 @@ def register():
                 # Generate a random 4-digit verification code
                 verification_code = str(random.randint(1000, 9999))
                 # Send an email with the verification code
-                msg = Message("Verification Code",
+                msg = Message("Your One-Time Verification Code is {}".format(verification_code),
                             sender= os.getenv("email_username"),
                             recipients=[email])
                 html_content = """
@@ -259,7 +259,7 @@ def verify2fa():
     if request.method == 'POST':
         entered_code = request.form['code']
         email = session.get('email')
-        user = User.query.filter_by(email=email).first()
+        user = User.query.filter_by(username=email).first() or User.query.filter_by(email=email).first()
         totp=TOTP(user.get_totpsecret())
         print(f"entered_code {entered_code} totp {totp}")
         if totp.verify(entered_code):
