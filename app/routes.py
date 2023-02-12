@@ -11,7 +11,7 @@ from io import BytesIO
 from dotenv import load_dotenv
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-import hashlib,uuid,random,pyotp,pyqrcode,base64,re,os,stripe,datetime,secrets
+import hashlib,uuid,random,pyotp,pyqrcode,base64,re,os,stripe,datetime,secrets,logging
 
 #Configuration
 load_dotenv()
@@ -23,6 +23,9 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 db.init_app(app)
+app.logger.setLevel(logging.WARNING)
+logging.basicConfig(filename='./app/logfile.log', format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.WARNING)
+logger = logging.getLogger(__name__)
 
 #Email Configuration
 app.config['MAIL_SERVER'] = 'smtp-mail.outlook.com'
@@ -84,6 +87,7 @@ def load_user(user_id):
 @app.route('/')
 def index():
     print(session)
+    app.logger.info('Index page accessed')
     session.permanent_session_lifetime = 60 #Resets session backs to 1 minute
     return render_template('index.html')
 
@@ -411,14 +415,12 @@ def delete_account():
     Useruuid = str(uuid.uuid4())[:8].encode('utf-8')
     salt = bytes(hashlib.sha256(Useruuid).hexdigest(), "utf-8")
     salt = user.account_salt
-    # print(salt,"password salt")
     hashed_password = hashlib.pbkdf2_hmac(
         "sha256",  # The hashing algorithm to use
         password.encode(),  # The password to hash, as bytes
         salt,  # The salt to use, as bytes
         100000  # The number of iterations to use
     )
-    # print(f"hashed_password{hashed_password.hex()} user.password:{user.password_hash}")
     if user.password_hash == hashed_password.hex():
         # print(session['user_id'])
         # If the password is correct, delete the account
@@ -813,7 +815,7 @@ def unauthorized():
 # def unauthorized(error):
 #     return render_template('404.html')
 
-# @app.errorhandler(404)#webpage for 401
+# @app.errorhandler(404)#webpage for 404
 # def not_found_error(error):
 #     return render_template('404.html')
 

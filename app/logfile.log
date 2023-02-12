@@ -1,3 +1,43 @@
-17-Aug-21 23:03:20 - Multiple failed login attempts by 192.168.50.69
-17-Aug-21 23:04:30 - Multiple failed login attempts by 192.168.50.69
-18-Aug-21 02:33:59 - Multiple failed login attempts by 192.168.179.18
+[12-Feb-23 15:59:44] INFO in _internal: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:3000
+[12-Feb-23 15:59:44] INFO in _internal: [33mPress CTRL+C to quit[0m
+[12-Feb-23 15:59:50] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:50] "GET / HTTP/1.1" 200 -
+[12-Feb-23 15:59:50] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:50] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:50] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:50] "[36mGET /static/css/classic.css HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:50] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:50] "[36mGET /static/css/classic.date.css HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:50] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:50] "[36mGET /static/css/classic.time.css HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:50] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:50] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:50] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:50] "[36mGET /static/css/custom.css HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:50] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:50] "[36mGET /static/css/animate.css HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:50] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:50] "[36mGET /static/css/font-awesome.min.css HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:50] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:50] "[36mGET /static/css/superslides.css HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:50] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:50] "[36mGET /static/css/baguetteBox.min.css HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:50] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:50] "[36mGET /static/js/jquery-3.2.1.min.js HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:50] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:50] "[36mGET /static/js/popper.min.js HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "[36mGET /static/images/logo.png HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "[36mGET /static/js/bootstrap.min.js HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "[36mGET /static/js/jquery.superslides.min.js HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "[36mGET /static/js/images-loded.min.js HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "[36mGET /static/js/isotope.min.js HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "[36mGET /static/js/baguetteBox.min.js HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "[36mGET /static/js/picker.js HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "[36mGET /static/js/picker.date.js HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "[36mGET /static/js/picker.time.js HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "[36mGET /static/js/legacy.js HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "[36mGET /static/js/custom.js HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "[36mGET /static/images/slider-01.jpg HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "GET / HTTP/1.1" 200 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "[36mGET /static/images/slider-02.jpg HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "[36mGET /static/images/slider-03.jpg HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "[36mGET /static/images/about-img.jpg HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "[36mGET /static/images/gallery-img-01.jpg HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "[36mGET /static/images/gallery-img-02.jpg HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "[36mGET /static/images/gallery-img-03.jpg HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:51] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:51] "[36mGET /static/images/gallery-img-04.jpg HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:52] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:52] "[36mGET /static/images/gallery-img-05.jpg HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:52] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:52] "[36mGET /static/images/gallery-img-06.jpg HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:52] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:52] "[36mGET /static/images/profile-1.jpg HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:52] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:52] "[36mGET /static/images/profile-3.jpg HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:52] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:52] "[36mGET /static/images/profile-7.jpg HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:52] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:52] "[36mGET /static/images/qt-bg.jpg HTTP/1.1[0m" 304 -
+[12-Feb-23 15:59:52] INFO in _internal: 127.0.0.1 - - [12/Feb/2023 15:59:52] "[36mGET /static/images/footer-bg.jpg HTTP/1.1[0m" 304 -
