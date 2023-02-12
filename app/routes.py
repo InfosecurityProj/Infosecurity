@@ -1,5 +1,5 @@
 from flask import Flask,request,flash,render_template,make_response,redirect,url_for,session,jsonify,Markup,request
-from flask_login import LoginManager,login_required,logout_user,current_user,login_user
+from flask_login import LoginManager,login_required,logout_user,login_user,current_user
 from sqlalchemy import or_
 from app.Forms import *
 from app.models import User,Order,Reservation
@@ -230,7 +230,7 @@ def verify():
             flash('Your account has been verified. You can now login.')
             session['user_id'] = user.id
             session['user_role'] = user.role
-            login(user)
+            login_user(user)
             return redirect(url_for('login'))
         else:
             flash('Invalid verification code.')
@@ -372,7 +372,7 @@ def delete_user(id):
 @app.route("/profile")
 @check_role(['Administrator','User','Guest'])
 def profile():
-    #print(session) debugging session
+    #print(session)#debugging session
     if not session.get('user_role'):
         session['user_role'] = 'Guest'
     if 'user_id' in session and current_user.is_authenticated:
@@ -388,6 +388,7 @@ def profile():
         flash("Please login to continue")
         resp = make_response(redirect(url_for('login')))
         return resp
+    return "Unknown Error Occured"
         
 @app.route("/logout")
 @login_required
@@ -397,7 +398,6 @@ def logout():
     session.pop('email', None)
     logout_user()
     session['user_role'] = 'Guest'
-    
     flash("Logout successful!")
     return redirect(url_for("login"))
 
