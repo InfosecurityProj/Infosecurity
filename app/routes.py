@@ -57,6 +57,19 @@ def check_special(string):
         return True
     else:
         return False
+    
+#Kenneth Part
+def get_device_fingerprint(request):
+    user_agent = request.user_agent.string
+    accept_language = request.accept_languages
+    screen_resolution = request.screen_resolution
+    timezone = request.timezone
+    # You can add other attributes to the device fingerprint as needed
+    # Combine the attributes into a single string
+    fingerprint = user_agent + str(accept_language) + str(screen_resolution) + timezone
+    # Hash the string to create the device fingerprint
+    hashed_fingerprint = hashlib.sha256(fingerprint.encode()).hexdigest()
+    return hashed_fingerprint
 
 #Creating DB if it doesn't exists
 with app.app_context():
@@ -82,18 +95,16 @@ with app.app_context():
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-
 #Pages
 @app.route('/')
 def index():
-    print(session)
-    app.logger.info('Index page accessed')
+    # print(session)
     session.permanent_session_lifetime = 60 #Resets session backs to 1 minute
     return render_template('index.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
-@limiter.limit("10/minute", methods=['GET', 'POST'])
+@limiter.limit("15/minute", methods=['GET', 'POST'])
 def login():
     global login_code
     if current_user.is_authenticated:
@@ -102,11 +113,7 @@ def login():
         username = request.form['email']
         email = request.form['email']
         password = request.form['password']
-        # user = User.query.filter_by(username=username).first()
         user = User.query.filter_by(username=username).first() or User.query.filter_by(email=email).first()
-        # user,useremail = User.query.filter_by(username=username).first(),User.query.filter_by(email=email).first()
-        # user = User.query.filter(or_(username==username,email==email)).first()
-        # print(user)
         session["email"] = email
         if user is not None and user.check_password(password):
             if user.account_status == 'enabled':
@@ -163,7 +170,7 @@ def login():
     return render_template('login.html', form=CreateUserForm)
 
 @app.route('/register', methods=['GET', 'POST'])
-@limiter.limit("5/minute", methods=['GET', 'POST'])
+@limiter.limit("15/minute", methods=['GET', 'POST'])
 def register():
     global verification_code
     create_user_form = CreateUserForm(request.form)
@@ -222,6 +229,7 @@ def register():
     return render_template('register.html', form=create_user_form)
 
 @app.route('/verify', methods=['GET', 'POST'])
+@limiter.limit("10/minute", methods=['GET', 'POST'])
 @check_role(['Administrator','User','Guest'])
 def verify():
     if request.method == 'POST':
@@ -242,6 +250,7 @@ def verify():
 
 @app.route('/logincode', methods=['GET', 'POST'])
 @check_role(['Administrator','User','Guest'])
+@limiter.limit("10/minute", methods=['GET', 'POST'])
 def logincode():
     if request.method == 'POST':
         entered_code = request.form['code']
@@ -259,6 +268,7 @@ def logincode():
 
 @app.route('/verify2fa', methods=['GET', 'POST'])
 @check_role(['Administrator','User','Guest'])
+@limiter.limit("10/minute", methods=['GET', 'POST'])
 def verify2fa():
     if request.method == 'POST':
         entered_code = request.form['code']
@@ -276,9 +286,10 @@ def verify2fa():
             flash('Invalid verification code.')
     return render_template('validate2fa.html')
 
-@app.route('/retrieving')
+@app.route('/retrieving', methods=['GET', 'POST'])
 @check_role('Administrator')
 @login_required
+@limiter.limit("20/minute", methods=['GET', 'POST'])
 def retrieving_users():
     if not session.get('user_role'):
         session['user_role'] = 'Guest'
@@ -301,6 +312,7 @@ def retrieving_users():
 
 # Update user
 @app.route('/updateU/<int:id>/', methods=['GET', 'POST'])
+@limiter.limit("10/minute", methods=['GET', 'POST'])
 def update_user(id):
     error = ''
     update_user_form = CreateUserForm(request.form)
@@ -357,6 +369,7 @@ def update_user(id):
 
 # Delete user
 @app.route('/deleteUser/<int:id>', methods=['POST'])
+@limiter.limit("10/minute", methods=['GET', 'POST'])
 def delete_user(id):
     if 'user_id' in session and current_user.is_authenticated:
         if session['user_role'] == 'Administrator':
@@ -375,6 +388,7 @@ def delete_user(id):
 # profile
 @app.route("/profile")
 @check_role(['Administrator','User','Guest'])
+@limiter.limit("20/minute", methods=['GET', 'POST'])
 def profile():
     #print(session)#debugging session
     if not session.get('user_role'):
@@ -407,6 +421,7 @@ def logout():
 
 @app.route('/delete_account', methods=['POST'])
 @login_required
+@limiter.limit("15/minute", methods=['GET', 'POST'])
 def delete_account():
     # Get the user's password from the form
     user_id = session.get('user_id')
@@ -438,6 +453,7 @@ def delete_account():
         return resp
 
 @app.route('/submit_password', methods=['POST'])
+@limiter.limit("15/minute", methods=['POST'])
 def submit_password():
     user_id = session.get('user_id')
     password = request.form.get('password')
@@ -470,6 +486,7 @@ def submit_password():
     return render_template('code.html', qr_svg_b64=qr_svg_b64)
 
 @app.route('/disable2fa', methods=['POST'])
+@limiter.limit("15/minute", methods=['POST'])
 def disable2fa():
     user_id = session.get('user_id')
     password = request.form.get('password')
@@ -492,6 +509,7 @@ def disable2fa():
 
 #Create Order
 @app.route('/menu', methods=['GET', 'POST'])
+@limiter.limit("20/minute", methods=['GET', 'POST'])
 def menu():
     if request.method == "POST":
         if request.form['menu'] == 'Burger':
@@ -523,6 +541,7 @@ def menu():
         return render_template("menu.html")
     
 @app.route('/createorder/<order_item>/<float:order_price>', methods=['GET', 'POST'])
+@limiter.limit("10/minute", methods=['GET', 'POST'])
 def create_order(order_item, order_price):
     create_order_form = CreateOrderForm(request.form)
     if request.method == 'POST' and create_order_form.validate():
@@ -542,6 +561,7 @@ def create_order(order_item, order_price):
 
 # Retrieve
 @app.route('/retrieveorder', methods=["GET", "POST"])
+@limiter.limit("15/minute", methods=['GET', 'POST'])
 @check_role(['Administrator','User'])
 def retrieve_order():
     # if not session.get('type'):
@@ -585,6 +605,7 @@ def retrieve_order():
     
 # Redirect to this endpoint after a successful payment
 @app.route("/success", methods=['GET', 'POST'])
+@limiter.limit("10/minute", methods=['GET', 'POST'])
 def payment_success():
     date = datetime.datetime.now().strftime("%Y-%m-%d")
     total=session.get("order_total")
@@ -602,6 +623,7 @@ def payment_failure():
 
 # Update
 @app.route('/updateOrder/<int:id>/', methods=['GET', 'POST'])
+@limiter.limit("10/minute", methods=['GET', 'POST'])
 @login_required
 def update_order(id):
     update_order_form = CreateOrderForm(request.form)
@@ -627,6 +649,7 @@ def update_order(id):
 
 # Delete
 @app.route('/deleteOrder/<int:id>', methods=['POST'])
+@limiter.limit("10/minute", methods=['POST'])
 @login_required
 @check_role(['Administrator','User'])
 def deleteOrder(id):
@@ -639,6 +662,9 @@ def deleteOrder(id):
 
 #Reservation
 @app.route('/createReserve', methods=["GET", "POST"])
+@limiter.limit("10/minute", methods=['GET', 'POST'])
+@login_required
+@check_role(['Administrator','User'])
 def createReserve():
     create_reserve_form = CreateReserveForm(request.form)
     error = ''

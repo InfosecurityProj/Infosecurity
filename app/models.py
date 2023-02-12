@@ -1,7 +1,7 @@
 from flask_login import UserMixin
 from flask import Flask
 from app.database import db,db
-import hashlib, uuid, re
+import hashlib, uuid, re,random
 
 app = Flask(__name__)
 
@@ -23,7 +23,7 @@ class User(UserMixin,db.Model):
     totpsecret = db.Column(db.String(255))
 
     def __init__(self,username,email,password_hash,role,title,first_name,last_name,gender,account_status,totpsecret):
-        self.user_id = User.id
+        self.user_id = random.randint(1,99999)
         self.username = username
         self.password_hash = password_hash
         self.role = role
