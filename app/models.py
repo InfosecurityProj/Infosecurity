@@ -1,14 +1,14 @@
 from flask_login import UserMixin
 from flask import Flask
 from app.database import db,db
-import hashlib, uuid, re,random
+import hashlib,uuid, re,random
 
 app = Flask(__name__)
 
 
 class User(UserMixin,db.Model):
     __tablename__ = 'user'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(36), primary_key=True, default=str(random.randint(1,9999)))
     username = db.Column(db.String(64), index=True, unique=True)
     password_hash = db.Column(db.String(128))
     role = db.Column(db.String(80), default="User")
@@ -23,7 +23,7 @@ class User(UserMixin,db.Model):
     totpsecret = db.Column(db.String(255))
 
     def __init__(self,username,email,password_hash,role,title,first_name,last_name,gender,account_status,totpsecret):
-        self.user_id = random.randint(1,99999)
+        self.user_id = User.id
         self.username = username
         self.password_hash = password_hash
         self.role = role
@@ -244,7 +244,7 @@ class Reservation(UserMixin,db.Model):
     
     def __init__(self, name, email, number, date, time, party_size):
         Reservation.count_id += 1
-        self.resveration_id = Reservation.count_id
+        self.reservation_id = Reservation.count_id
         self.name = name
         self.email = email
         self.number = number
@@ -253,7 +253,7 @@ class Reservation(UserMixin,db.Model):
         self.party_size = party_size
 
     def get_resveration_id(self):
-        return self.resveration_id
+        return self.reservation_id
 
     def get_name(self):
         return self.name

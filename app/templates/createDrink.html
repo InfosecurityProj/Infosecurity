@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %} HoHo's Tavern - Menu {% endblock %}
+
+{% block content %}
+{% from "includes/_formHelper.html" import render_field %}
+
+<br>
+<br>
+<br>
+
+<div class="reservation-box">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-12">
+					<div class="heading-title text-center">
+						<h2>Create Order</h2>
+                        <p>Order Item: {{ order_item }}</p>
+					</div>
+				</div>
+			</div>
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="contact-block">
+                    <form method="POST" action="">
+                      <div class="row">
+                        <div class="col-md-12 text-center">
+                          <div class="col-md-6" style="float:none;margin:auto;">
+                            <div class="form-group">
+                              {{ render_field(form.drinks, class="form-control", style="list-style-type:none") }}
+                            </div>
+                          </div>
+                          <div class="col-md-6" style="float:none;margin:auto;">
+                            <div class="form-group">
+                              {{ render_field(form.straw, class="form-control", style="list-style-type:none") }}
+                            </div>
+                          </div>
+                      <div id="prof">
+                        <div class="col-md-6" style="float:none;margin:auto;">
+                          <div class="form-group">
+                            {{ render_field(form.remarks, class="form-control") }}
+                          </div>
+                        </div>
+                      </div>
+                          <div class="col-md-6" style="float:none;margin:auto;">
+                            <div class="form-group">
+                              <input type="submit" value="Submit" class="btn btn-common"/>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                    </div>
+            </div>
+        </div>
+</div>
+
+	<!-- Start Footer -->
+	<footer class="footer-area bg-f">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-3 col-md-6">
+					<h3>About Us</h3>
+					<p>The founder of HoHo's Tavern is a 30-year-old named Hovan, who dreamed of opening his own tavern business. He founded HoHo's Tavern on March 2023 which was a great accomplishment of his. He started having this dream back when he was 20 years old. To achieve this dream, he studied overseas at China to learn business management for 10 years. </p>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<h3>Tavern Opening hours</h3>
+					<p><span class="text-color">Monday: </span>  9AM - 10PM</p>
+					<p><span class="text-color">Tue-Wed :</span> 9AM - 10PM</p>
+					<p><span class="text-color">Thu-Fri :</span> 9AM - 10PM</p>
+					<p><span class="text-color">Sat-Sun :</span> 5PM - 10PM</p>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<h3>Contact information</h3>
+					<p class="lead">50 Horn Road #02-10, Singapore 888888</p>
+					<p class="lead"><a href="#">+65 8812 6296</a></p>
+					<p><a href="#">info@Hoho_Tavern.py</a></p>
+				</div>
+				<div class="col-lg-3 col-md-6">
+					<h3>Subscribe</h3>
+					<div class="subscribe_form">
+						<form class="subscribe_form">
+							<input name="EMAIL" id="subs-email" class="form_input" placeholder="Email Address..." type="email">
+							<button type="submit" class="submit">SUBSCRIBE</button>
+							<div class="clearfix"></div>
+						</form>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+		<div class="copyright">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-12">
+						<p class="company-name">All Rights Reserved. &copy; 2022 <a href="#">HoHo's Tavern</a></p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</footer>
+	<!-- End Footer -->
+
+	<a href="#" id="back-to-top" title="Back to top" style="display: none;">&uarr;</a>
+{% endblock %}

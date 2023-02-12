@@ -71,8 +71,8 @@
     <thead>
       <tr>
         <th>Order ID</th>
-        <th>Meat</th>
-        <th>Sauce</th>
+        <th>Meat/Mixer</th>
+        <th>Sauce/Straw</th>
         <th>Order Item</th>
 	    <th>Price</th>
 	    <th>Remarks</th>
@@ -82,7 +82,6 @@
     </thead>
     <tbody>
 	{% for order in order %}
-	{% if order.user_id == session['user_id'] %}
       <tr>
         <td>{{ order.get_order_id() }}</td>
         {% if order.get_meat() == 'C' %}
@@ -93,6 +92,14 @@
         <td>Fish</td>
         {% elif order.get_meat() == 'V' %}
         <td>Vegetable</td>
+		{% elif order.get_meat() == 'Co' %}
+        <td>Coke</td>
+		{% elif order.get_meat() == 'S' %}
+        <td>Sprite</td>
+		{% elif order.get_meat() == 'P' %}
+        <td>Plain Water</td>
+		{% elif order.get_meat() == 'N' %}
+        <td>None</td>
         {% endif %}
         <td>{{ order.get_sauce() }}</td>
         <td>{{ order.get_order_item() }}</td>
@@ -135,7 +142,7 @@
 		  </form>
         </td>
       </tr>
-	{% endif %}
+
     {% endfor %}
     </tbody>
   </table>

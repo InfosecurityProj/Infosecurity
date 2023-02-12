@@ -47,6 +47,17 @@ class CreateOrderForm(Form):
                         choices=[('', 'Select Sauce'), ('C', 'Chilli'), ('T', 'Tomato')], default='')
     remarks = TextAreaField('Remarks', [validators.Length(min=0, max=50),validators.Optional()])
 
+class CreateDrinkForm(Form):
+    # water = SelectField('Water', [validators.DataRequired()], choices=[('', 'Plain Water?'), ('Y', 'Yes'), ('N', 'No')],
+    #                   default='')
+    # straw = SelectField('Straw', [validators.DataRequired()],
+    #                     choices=[('', 'Straw?'), ('Y', 'Yes'), ('N', 'No')], default='')
+    # remarks = TextAreaField('Remarks', [validators.Length(min=0, max=50),validators.Optional()])
+    drinks = SelectField('Drinks', [validators.DataRequired()], choices=[('', 'Select Drinks'), ('Co', 'Coke'), ('S', 'Sprite'), ('P', 'Plain Water'), ('N', 'None')],
+                      default='')
+    straw = SelectField('Straw', [validators.DataRequired()],
+                        choices=[('', 'Straw'), ('Yes', 'Yes'), ('NO', 'No')], default='')
+    remarks = TextAreaField('Remarks', [validators.Length(min=0, max=50),validators.Optional()])
 
 # user form
 class CreateUserForm(Form):
@@ -89,9 +100,16 @@ class CreateUserForm(Form):
         return True
 
 class ResetPasswordForm(FlaskForm):
-    password = PasswordField('Password', [validators.InputRequired()])
-    confirm_password = PasswordField('Confirm Password',
-                                     validators=[validators.DataRequired(), EqualTo('password')])
+    password = PasswordField('Password', [
+        validators.InputRequired(),
+        validators.Length(min=8, message='Password must be at least 8 characters long'),
+        validators.Regexp(r'[A-Za-z0-9@#$%^&+=]', message='Password must contain at least one uppercase letter, one lowercase letter, one digit and one special character')
+    ])
+    confirm_password = PasswordField('Confirm Password', [
+        validators.DataRequired(),
+        validators.InputRequired(),
+        validators.EqualTo('password', message='Passwords must match')
+    ])
     submit = SubmitField('Reset Password')
 
 class RequestResetForm(FlaskForm):
