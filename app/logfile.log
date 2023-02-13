@@ -15930,3 +15930,33 @@ jinja2.exceptions.UndefinedError: 'app.Forms.CreateDrinkForm object' has no attr
 [13-Feb-23 11:03:00] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:03:00] "[36mGET /static/css/baguetteBox.min.css HTTP/1.1[0m" 304 -
 [13-Feb-23 11:03:00] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:03:00] "[36mGET /static/images/footer-bg.jpg HTTP/1.1[0m" 304 -
 [13-Feb-23 11:03:00] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:03:00] "GET /staffReserve HTTP/1.1" 200 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "GET /staffReserve HTTP/1.1" 200 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/css/classic.css HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/css/classic.date.css HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/css/classic.time.css HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/css/custom.css HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/js/jquery-3.2.1.min.js HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/js/popper.min.js HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/js/bootstrap.min.js HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/js/jquery.superslides.min.js HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/js/images-loded.min.js HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/js/isotope.min.js HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/js/baguetteBox.min.js HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/js/picker.js HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/js/picker.date.js HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/js/picker.time.js HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/js/legacy.js HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/js/custom.js HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/images/logo.png HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/css/animate.css HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/css/font-awesome.min.css HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/css/superslides.css HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/css/baguetteBox.min.css HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "[36mGET /static/images/footer-bg.jpg HTTP/1.1[0m" 304 -
+[13-Feb-23 11:17:35] INFO in _internal: 127.0.0.1 - - [13/Feb/2023 11:17:35] "GET /staffReserve HTTP/1.1" 200 -
+[13-Feb-23 11:28:57] INFO in _internal:  * Detected change in 'C:\\Users\\hongh\\Documents\\GitHub\\Infosecurity\\app\\routes.py', reloading
+[13-Feb-23 11:29:00] INFO in _internal:  * Restarting with stat
+[13-Feb-23 11:29:02] WARNING in _internal:  * Debugger is active!
+[13-Feb-23 11:29:02] INFO in _internal:  * Debugger PIN: 916-808-522

@@ -425,7 +425,7 @@ def verify2fa():
         email = session.get('email')
         user = User.query.filter_by(username=email).first() or User.query.filter_by(email=email).first()
         totp=TOTP(user.get_totpsecret())
-        print(f"entered_code {entered_code} totp {totp}")
+        # print(f"entered_code {entered_code} totp {totp}")
         if totp.verify(entered_code):
             session['user_id'] = user.id
             session['user_role'] = user.role
