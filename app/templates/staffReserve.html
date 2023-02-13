@@ -61,15 +61,15 @@
     {% for reserve in reservation_list %}
       <tr>
         <td>{{ reserve.get_resveration_id() }}</td>
-        <td>{{ name_list[reserve.get_user_id()] | safe }}</td>
-        <td>{{ email_list[reserve.get_user_id()] }}</td>
-        <td>{{ number_list[reserve.get_user_id()] }}</td>
+        <td>{{ reserve.get_name()}}</td>
+        <td>{{  reserve.get_email() }}</td>
+        <td>{{ reserve.get_number()  }}</td>
         <td>{{ reserve.get_date()}}</td>
         <td>{{ reserve.get_time() }}</td>
           <td>{{ reserve.get_party_size() }}</td>
         <td><a href="/updateReserve/{{reserve.get_resveration_id()}}" class="btn btn-common">Update</a></td>
         <td>
-          <form action="{{url_for('deleteReserve', id=reserve.get_user_id())}}" method="POST">
+          <form action="{{url_for('deleteReserve', id=reserve.get_resveration_id())}}" method="POST">
 
               <!-- Button to Open the Modal -->
     <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal_{{reserve.get_resveration_id()}}">
@@ -89,7 +89,7 @@
 
           <!-- Modal body -->
           <div class="modal-body">
-            Are you sure you want to delete {{name_list[reserve.get_user_id()]}}?
+            Are you sure you want to delete {{reserve.get_resveration_id()}}?
           </div>
 
           <!-- Modal footer -->

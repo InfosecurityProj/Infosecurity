@@ -43,8 +43,10 @@
 								<!-- dropdown view for staffs -->
 								{% elif current_user.get_role() == "Administrator" %}
 								<!-- Retrieve Users -->
+								
 								<a class="{{'dropdown-item active' if active_page == 'user' else 'dropdown-item' }}" href="/retrieving">User Details</a>
 								<!-- Retrieve reservation for staffs -->
+								<a class="{{'dropdown-item active' if active_page == 'uReserve' else 'dropdown-item' }}" href="/menu">Menu</a>
 								<a class="{{'dropdown-item active' if active_page == 'sReserve' else 'dropdown-item' }}" href="/staffReserve">Reservation Details</a>
 								<!-- Logout -->
 								<a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a>
@@ -53,6 +55,7 @@
 								{% elif current_user.get_role() == "User" %}
 								<!-- User Reserve -->
 								<a class="{{'dropdown-item active' if active_page == 'uReserve' else 'dropdown-item' }}" href="/menu">Menu</a>
+								<a class="{{'dropdown-item active' if active_page == 'uReserve' else 'dropdown-item' }}" href="/userReserve">User Reservation</a>
 								<!-- User Reserve -->
 								<a class="{{'dropdown-item active' if active_page == 'profile' else 'dropdown-item' }}" href="/profile">Profile</a>
 								<!-- Logout -->

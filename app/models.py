@@ -241,8 +241,9 @@ class Reservation(UserMixin,db.Model):
     date = db.Column(db.String(50))
     time = db.Column(db.String(50))
     party_size = db.Column(db.String(50))
+    user_id = db.Column(db.Integer)
     
-    def __init__(self, name, email, number, date, time, party_size):
+    def __init__(self, name, email, number, date, time, party_size, user_id):
         Reservation.count_id += 1
         self.reservation_id = Reservation.count_id
         self.name = name
@@ -251,9 +252,10 @@ class Reservation(UserMixin,db.Model):
         self.date = date
         self.time = time
         self.party_size = party_size
+        self.user_id = user_id
 
     def get_resveration_id(self):
-        return self.reservation_id
+        return self.id
 
     def get_name(self):
         return self.name
@@ -272,6 +274,9 @@ class Reservation(UserMixin,db.Model):
 
     def get_party_size(self):
         return self.party_size
+    
+    def get_user_id(self):
+        return self.user_id
 
     def set_resveration_id(self, resveration_id):
         self.resveration_id = resveration_id
@@ -293,3 +298,6 @@ class Reservation(UserMixin,db.Model):
 
     def set_party_size(self, party_size):
         self.party_size = party_size
+    
+    def set_user_id(self, user_id):
+        self.user_id = user_id

