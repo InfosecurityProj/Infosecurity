@@ -786,10 +786,11 @@ def payment_success():
     date = datetime.datetime.now().strftime("%Y-%m-%d")
     total=session.get("order_total")
     order_list = Order.query.filter_by(user_id=session['user_id']).all()
+    randomnumber= random.randint(132,9999)
     for order in order_list:
         db.session.delete(order)
     db.session.commit()
-    response = make_response(render_template('paymentsuccessful.html', order=order_list, total=total, date=date))
+    response = make_response(render_template('paymentsuccessful.html', order=order_list, total=total, date=date, randomnumber=randomnumber))
     return response
 
 @app.route("/failure")
@@ -885,7 +886,6 @@ def userReserve():
     print(reserve_user_list)
     return render_template('userReserve.html', count=len(reserve_user_list), reserve_user_list=reserve_user_list,
                            searchReserve=searchReserve, error=error)
-
 
 @app.route('/staffReserve')
 @limiter.limit("20/minute", methods=['GET', 'POST'])
